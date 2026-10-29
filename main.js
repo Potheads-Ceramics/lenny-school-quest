@@ -165,10 +165,10 @@ window.LQ = window.LQ || {};
     LQ.UI.init();
     LQ.Joy.init();
     try {
-      const res = await fetch('data/schools.json', { cache: 'no-cache' });
+      const res = await fetch('schools.json', { cache: 'no-cache' });
       Game.data = await res.json();
     } catch (e) {
-      document.getElementById('loading').textContent = 'De lijst met scholen kon niet laden (data/schools.json). Laad de pagina opnieuw.';
+      document.getElementById('loading').textContent = 'De lijst met scholen kon niet laden (schools.json). Laad de pagina opnieuw.';
       return;
     }
     // player code + online save (see cloud.js); without config this just returns the local save

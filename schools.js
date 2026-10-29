@@ -77,10 +77,10 @@ LQ.Schools = (function () {
         if (!scene.textures.exists(key)) scene.textures.addCanvas(key, LQ.Sprites.landmark(lm.kind, lm.id));
         scene.add.image(x, y + 2, key).setOrigin(0.5, 1).setDepth(y);
       }
-      const icon = { family: '🏡', shed: '🌻', playground: '🎡', zoo: '🦒', park: '🌳', roundabout: '🔄', streetsign: '🪧' }[lm.kind] || '📍';
-      const top = lm.kind === 'roundabout' ? (lm.y0 - 1) * TS : y - ({ family: 48, shed: 36, playground: 50, zoo: 58, park: 28, streetsign: 28 }[lm.kind] || 30);
+      const icon = { family: '🏡', shed: '🌻', playground: '🎡', zoo: '🦒', park: '🌳', roundabout: '🔄', streetsign: '🪧', primary: '🎒', football: '⚽' }[lm.kind] || '📍';
+      const top = lm.kind === 'roundabout' ? (lm.y0 - 1) * TS : y - ({ family: 48, shed: 36, playground: 50, zoo: 58, park: 28, streetsign: 28, primary: 52, football: 40 }[lm.kind] || 30);
       const t = sign(scene, x, top, icon + ' ' + l.label);
-      if (lm.kind === 'family' || lm.kind === 'shed') t.setBackgroundColor('#ffe0e6');
+      if (lm.kind === 'family' || lm.kind === 'shed' || lm.kind === 'primary' || lm.kind === 'football') t.setBackgroundColor('#ffe0e6');
       const d = lm.door;
       targets.push({ kind: 'landmark', x: d.x * TS + 8, y: d.y * TS + 12, label: icon + ' ' + l.label, open: () => LQ.UI.toast(l.say || l.label) });
     });

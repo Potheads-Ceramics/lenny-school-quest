@@ -520,7 +520,7 @@ LQ.UI = (function () {
   // Lenny's player code and the online save (cloud.js).
   function cloudSection() {
     const Cl = LQ.Cloud;
-    if (!Cl || !Cl.enabled()) return h('section', {}, [h('h3', {}, 'Opslaan'), h('p', { class: 'small' }, 'De voortgang wordt alleen op dit apparaat bewaard. Vul js/cloud-config.js in om op meerdere apparaten te spelen.')]);
+    if (!Cl || !Cl.enabled()) return h('section', {}, [h('h3', {}, 'Opslaan'), h('p', { class: 'small' }, 'De voortgang wordt alleen op dit apparaat bewaard. Vul cloud-config.js in om op meerdere apparaten te spelen.')]);
     const st = Cl.status(), t = st.lastOk ? st.lastOk.toLocaleTimeString('nl', { hour: '2-digit', minute: '2-digit' }) : null;
     return h('section', { class: 'cloudbox' }, [
       h('h3', {}, 'Spelerscode van Lenny'),

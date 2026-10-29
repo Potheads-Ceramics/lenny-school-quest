@@ -9,7 +9,7 @@
 window.LQ = window.LQ || {};
 
 LQ.Map = (function () {
-  const KM_PER_TILE = 0.045; // 27 Oct 2026: finer grid (was 0.065) so buildings look less squashed together
+  const KM_PER_TILE = 0.03; // 29 Oct 2026: 30 m per tile (was 45, before that 65) so buildings, parks and distances keep real proportions
   const BOUNDS = { x0: -2.4, x1: 7.0, y0: -2.9, y1: 4.9 }; // km, x east, y south of home
   const T = { GRASS: 0, GRASS2: 1, TUFT: 2, ROAD: 3, WATER: 4, BRIDGE: 5, PLAZA: 6, WATER2: 7,
               TREE: 8, PINE: 9, BUSH: 10, FLOW_R: 11, FLOW_Y: 12, FENCE: 13, LAMP: 14, REEDS: 15, HOUSE_A: 16, HOUSE_B: 20, BIKE: 25, BIKE_CROSS: 26 };
@@ -115,7 +115,7 @@ LQ.Map = (function () {
     }
     // parks: marked so the decoration puts trees there instead of houses
     (data.landmarks || []).filter(l => l.kind === 'park' || l.kind === 'zoo' || l.kind === 'playground').forEach(l => {
-      const c = geoTile([l.lat, l.lon]), rad = l.kind === 'park' ? 6 : 4;
+      const c = geoTile([l.lat, l.lon]), rad = Math.round(({ park: 0.28, zoo: 0.22, playground: 0.16 }[l.kind] || 0.12) / KM_PER_TILE); // real-ish size in km
       for (let y = c.y - rad; y <= c.y + rad; y++) for (let x = c.x - rad - 1; x <= c.x + rad + 1; x++) if (inb(x, y) && Math.hypot((x - c.x) / 1.2, y - c.y) <= rad) park[idx(x, y)] = 1;
     });
 
@@ -175,7 +175,7 @@ LQ.Map = (function () {
     }
 
     /* ---- family landmarks along the routes (houses, park, zoo, ...) ---- */
-    const LSIZE = { family: [3, 3], shed: [2, 2], playground: [4, 3], zoo: [4, 3], park: [1, 1], streetsign: [1, 1] };
+    const LSIZE = { family: [3, 3], shed: [2, 2], playground: [4, 3], zoo: [4, 3], park: [1, 1], streetsign: [1, 1], primary: [4, 3], football: [4, 3] };
     function freeBox(cx, cy, w, h) {
       const xa = cx - Math.floor(w / 2) - 1, xb = xa + w + 1;
       for (let y = cy - h - 1; y <= cy + 1; y++) for (let x = xa; x <= xb; x++) {
@@ -291,7 +291,7 @@ LQ.Map = (function () {
     const s = sy * W + sx, goal = ty * W + tx;
     g[s] = 0; push(h(sx, sy), s);
     let guard = 0;
-    while (heap.length && guard++ < 120000) {
+    while (heap.length && guard++ < 400000) {
       const [, i] = pop(); if (closed[i]) continue; closed[i] = 1;
       if (i === goal) break;
       const x = i % W, y = (i / W) | 0;
