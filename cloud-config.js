@@ -8,6 +8,6 @@
    ===================================================================== */
 window.LQ = window.LQ || {};
 LQ.CloudConfig = {
-  url: '',      // e.g. 'https://abcdefghijk.supabase.co'
-  anonKey: ''   // e.g. 'sb_publishable_…' or 'eyJhbGciOi…'
+  url: 'https://wvsanxwvbctywvojbfpd.supabase.co',
+  anonKey: 'sb_publishable_oV95vjpXH7VfzuB8_Zyryw_BG5udIDA'
 };
