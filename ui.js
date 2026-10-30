@@ -484,8 +484,6 @@ LQ.UI = (function () {
       setTimeout(() => why.classList.remove('hide'), 700 + 3 * 900);
       // Mami is there too (30 Oct 2026)
       setTimeout(() => { if (!$('veil').hidden) { const m = C().say('👏👏 ¡Qué bien, Len! Estoy re orgullosa de vos. ¡Ahora vamos juntos a las open dagen!', 'Mami'); const face = document.createElement('canvas'); face.width = 20; face.height = 14; face.getContext('2d').drawImage(LQ.Sprites.mamiSheet(), 40, 0, 20, 14, 0, 0, 20, 14); face.className = 'mami-face'; m.querySelector('.who').prepend(face); m.classList.add('mami-cheer'); body.insertBefore(m, body.children[2] || null); } }, 700 + 3 * 900 + 400);
-      // ...and Lucia, Lenny's little sister
-      setTimeout(() => { if (!$('veil').hidden && LQ.Extras && LQ.Extras.luciaFace) { const l = LQ.Extras.luciaFace(C().say('🎉 Jaaa, Len! Mag ik mee naar de open dagen? Dan kijk ik ook rond! 💜', 'Lucia')); l.classList.add('mami-cheer'); body.insertBefore(l, body.children[3] || null); } }, 700 + 3 * 900 + 1400);
     }
     st.revealed = true; st.lastRanking = ranked.map(r => r.id); G().save(); hud();
   }
