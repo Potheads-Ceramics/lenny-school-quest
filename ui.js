@@ -276,17 +276,17 @@ LQ.UI = (function () {
      when one exists, and Google Street View at the school's address to look
      around. Schools without a free photo show Street View straight away. */
   function streetView(s) {
-    return h('iframe', { class: 'sv-frame', src: `https://www.google.com/maps?layer=c&cbll=${s.lat},${s.lon}&output=svembed`, title: `Street View bij ${s.short}`, loading: 'lazy', allowfullscreen: true, referrerpolicy: 'no-referrer-when-downgrade' });
+    return h('iframe', { class: 'sv-frame', src: `https://www.google.com/maps?layer=c&cbll=${s.lat},${s.lon}&output=svembed`, title: `Street View bij ${s.short}`, allowfullscreen: true, referrerpolicy: 'no-referrer-when-downgrade' });
   }
   function photoBlock(s) {
     const p = s.photo, wrap = h('div', { class: 'photo-box' });
     const slot = h('div', { class: 'photo-slot' });
-    const showSV = () => { slot.innerHTML = ''; slot.appendChild(streetView(s)); slot.appendChild(h('p', { class: 'small' }, '🧭 Sleep in het beeld om rond te kijken. Beeld: Google Street View.')); btn.textContent = p ? '📷 Terug naar de foto' : '🧭 Kijk rond op straat'; showing = 'sv'; };
-    const showPhoto = () => { slot.innerHTML = ''; slot.appendChild(h('img', { class: 'school-photo', src: p.src, alt: `Het gebouw van ${s.short}`, loading: 'lazy' }));
+    const showSV = () => { slot.innerHTML = ''; slot.appendChild(streetView(s)); slot.appendChild(h('p', { class: 'small' }, ['🧭 Sleep in het beeld om rond te kijken. Beeld: Google Street View. Zie je niets? ', h('a', { href: `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${s.lat},${s.lon}`, target: '_blank', rel: 'noopener' }, 'Open in Google Maps ↗')])); btn.textContent = p ? '📷 Terug naar de foto' : '🧭 Kijk rond op straat'; showing = 'sv'; };
+    const showPhoto = () => { slot.innerHTML = ''; slot.appendChild(h('img', { class: 'school-photo', src: p.src, alt: `Het gebouw van ${s.short}` }));
       slot.appendChild(h('p', { class: 'small' }, ['Foto: ', p.credit, ' (', h('a', { href: p.page, target: '_blank', rel: 'noopener' }, p.license), '), Wikimedia Commons'])); btn.textContent = '🧭 Kijk rond op straat'; showing = 'photo'; };
     let showing = null;
     const btn = h('button', { class: 'btn', onclick: () => (showing === 'photo' ? showSV() : p ? showPhoto() : showSV()) }, '');
-    wrap.append(h('b', {}, `📷 Zo ziet ${s.short} eruit`), slot, p ? C().row([btn]) : null);
+    [h('b', {}, `📷 Zo ziet ${s.short} eruit`), slot, p ? C().row([btn]) : null].forEach(x => x && wrap.appendChild(x));
     p ? showPhoto() : showSV();
     return wrap;
   }
