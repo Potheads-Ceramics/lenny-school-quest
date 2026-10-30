@@ -193,13 +193,13 @@ LQ.Sprites = (function () {
     const K = P || KIT, sheet = canvas(64, 16);
     // each leg: [x, lifted?] per frame — near-front, far-front, near-back, far-back
     const LEGS = [
-      [[2, 0], [5, 1], [12, 1], [9, 0]],
-      [[3, 1], [4, 0], [11, 0], [10, 1]],
-      [[5, 1], [2, 0], [9, 0], [12, 1]],
-      [[4, 0], [3, 1], [10, 1], [11, 0]]
+      [[5, 0], [7, 1], [12, 1], [10, 0]],
+      [[6, 1], [6, 0], [11, 0], [11, 1]],
+      [[7, 1], [5, 0], [10, 0], [12, 1]],
+      [[6, 0], [6, 1], [11, 1], [11, 0]]
     ];
     const BOB = [0, -1, 0, -1];
-    const TAIL = [[[13, 7], [14, 6], [14, 5], [15, 4]], [[13, 7], [14, 6], [15, 5], [15, 4]], [[13, 7], [14, 7], [15, 6], [15, 5]], [[13, 7], [14, 6], [15, 5], [15, 4]]];
+    const TAIL = [[[13, 7], [14, 6], [14, 5], [14, 4]], [[13, 7], [14, 6], [15, 5], [15, 4]], [[13, 7], [14, 6], [14, 5], [14, 4]], [[13, 7], [14, 7], [15, 6], [15, 5]]];
     const leg = (r, x, up, col, paw) => { if (up) { r(x, 11, 1, 2, col); r(x - 1, 12, 1, 1, paw); } else { r(x, 11, 1, 3, col); r(x, 14, 1, 1, paw); } };
     for (let f = 0; f < 4; f++) {
       const cell = canvas(16, 16), b = BOB[f], r = painter(cell.ctx, 0, b), rl = painter(cell.ctx, 0, 0);
@@ -210,16 +210,21 @@ LQ.Sprites = (function () {
       // tail
       TAIL[f].forEach(([x, y]) => r(x, y, 1, 1, K.fur)); r(TAIL[f][3][0], TAIL[f][3][1], 1, 1, K.tailTip || K.dark);
       // body: rounded back, lighter belly
-      r(4, 7, 9, 4, K.fur); r(5, 6, 7, 1, K.fur); r(5, 10, 7, 1, K.belly || K.light);
-      if (K.stripes !== false) { r(7, 6, 1, 3, K.dark); r(9, 6, 1, 3, K.dark); r(11, 7, 1, 2, K.dark); }
-      if (K.tux) { r(4, 9, 3, 2, K.light); }               // white chest
-      // round head on the left, two pointy ears
-      r(1, 3, 4, 1, K.fur); r(0, 4, 6, 4, K.fur); r(1, 8, 4, 1, K.fur);
-      r(0, 1, 1, 2, K.fur); r(1, 2, 1, 1, K.fur); r(4, 1, 1, 2, K.fur); r(3, 2, 1, 1, K.fur);
-      r(0, 2, 1, 1, K.ear); r(4, 2, 1, 1, K.ear);
-      if (K.tux) { r(1, 4, 1, 4, K.light); r(0, 6, 2, 2, K.light); r(1, 8, 3, 1, K.light); } // white blaze and muzzle
-      else { r(0, 7, 3, 1, K.muzzle); r(1, 8, 3, 1, K.muzzle); }
-      r(2, 5, 1, 1, K.eye); r(0, 6, 1, 1, K.nose);
+      r(5, 7, 8, 4, K.fur); r(6, 6, 6, 1, K.fur); r(6, 10, 6, 1, K.belly || K.light);
+      if (K.stripes !== false) { r(8, 6, 1, 2, K.dark); r(10, 6, 1, 2, K.dark); }
+      if (K.tux) { r(5, 9, 3, 2, K.light); }               // white chest
+      // big round head (cute proportions), soft ears with pink inside
+      r(1, 3, 5, 1, K.fur); r(0, 4, 7, 4, K.fur); r(1, 8, 5, 1, K.fur);
+      r(0, 2, 2, 2, K.fur); r(5, 2, 2, 2, K.fur); r(0, 1, 1, 1, K.fur); r(6, 1, 1, 1, K.fur);
+      r(1, 3, 1, 1, K.ear); r(5, 3, 1, 1, K.ear);
+      if (K.stripes !== false) { r(3, 3, 1, 1, K.dark); }
+      if (K.tux) { r(3, 3, 1, 3, K.light); r(1, 6, 4, 3, K.light); } // white blaze and muzzle
+      else { r(1, 7, 3, 2, K.muzzle); }
+      // big dark eye with a white sparkle, small pink nose, tiny smile
+      if (K.eyeColor) { r(1, 5, 2, 2, K.eye); r(2, 6, 1, 1, K.pupil); r(1, 5, 1, 1, '#ffffff'); } // light eyes on dark fur
+      else { r(1, 5, 2, 2, K.pupil || '#17130f'); r(1, 5, 1, 1, '#ffffff'); }
+      r(0, 7, 1, 1, K.nose);
+      r(1, 8, 1, 1, K.cheek || K.ear);
       // near legs on top
       leg(rl, L[0][0], L[0][1], nearCol, paw); leg(rl, L[2][0], L[2][1], nearCol, paw);
       outline(cell.ctx, 16, 16, C.outline);
@@ -233,7 +238,7 @@ LQ.Sprites = (function () {
      nose and big green eyes (from the photo). */
   const FIFI = { fur: '#24242a', dark: '#24242a', light: '#f4f2ee', muzzle: '#f4f2ee', belly: '#f4f2ee', paw: '#f4f2ee',
                  leg: '#24242a', legFar: '#1a1a1f', ear: '#e8a3a8', nose: '#f0a2ad', eye: '#b8cf3e', pupil: '#121214',
-                 whisker: '#f4efe6', tailTip: '#24242a', stripes: false, tux: true };
+                 whisker: '#f4efe6', tailTip: '#24242a', stripes: false, tux: true, eyeColor: true };
   /* Fifi sitting (16x16, 2 frames: tail + blink), same pose as Kit. */
   function fifiSheet() {
     const K = FIFI, sheet = canvas(32, 16);
