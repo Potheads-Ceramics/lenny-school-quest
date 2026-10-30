@@ -284,7 +284,7 @@ LQ.UI = (function () {
   // The old Street View embed showed a world map on phones, so: a map from
   // above (always works) plus a button that opens Street View in Google Maps.
   function aerial(s) {
-    return h('iframe', { class: 'sv-frame', src: `https://maps.google.com/maps?q=${s.lat},${s.lon}&t=k&z=18&output=embed`, title: `${s.short} van bovenaf`, loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade' });
+    return h('iframe', { class: 'sv-frame', src: `https://maps.google.com/maps?q=${encodeURIComponent(s.name + ', ' + (s.address || 'Rotterdam'))}&t=k&z=18&output=embed`, title: `${s.short} van bovenaf`, loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade' });
   }
   const svLink = (s) => `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${s.lat},${s.lon}`;
   function photoBlock(s) {
