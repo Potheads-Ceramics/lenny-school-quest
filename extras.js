@@ -675,10 +675,10 @@ LQ.Extras = (function () {
       if (Math.random() < 0.45) floatUp(scene, kx + (Math.random() * 10 - 5), ky - 22, Math.random() < 0.5 ? '🎵' : '🎶', { size: 6, rise: 14, dur: 1200, drift: Math.random() * 8 - 4 });
     } });
     scene.events.once('shutdown', () => { lucia = null; karaokeSpr = null; sway.remove(); stopDance(true); });
-    return [
+    return addJaques(scene, map).concat([
       { kind: 'lucia', x: lx, y: ly - 2, label: '💜 Lucia', open: () => luciaChat() },
       { kind: 'karaoke', x: kx, y: ky - 2, label: '🎤 Zing en dans met Lucia', open: () => startDance() }
-    ];
+    ]);
   }
   const LUCIA_HI = ['Hoi Len! Ik oefen een nieuw liedje. Welke school vond jij het leukst?', 'Len! Als jij naar de middelbare gaat, mag ik dan je oude fietsbel? 😄', 'Hoi grote broer! Wist je dat een giraf maar 7 nekwervels heeft? Net als wij!'];
   function luciaChat() {
@@ -730,6 +730,81 @@ LQ.Extras = (function () {
     if (!quiet) LQ.UI.toast('Wat een dansje! 💜 Lucia: "Nog een keer?"');
   }
 
+
+  /* ---------- Jaques, a very hidden easter egg (30 Oct 2026) ----------
+     He sits behind the bush furthest to the top right of the map. To find
+     him: ride 3 circles around the house on the bike, then 1 circle on foot,
+     one right after the other. Then tap that bush and he appears. */
+  const LAP_R = 14 * TS;         // a circle counts within 14 tiles of the house
+  const lap = { acc: 0, last: null, mode: null, seq: '' };
+  function trackLaps(scene) {
+    const map = G().map, pl = G().player; if (!map || !pl || G().inside) return;
+    const h = map.home, cx = (h.x0 + h.x1 + 1) / 2 * TS, cy = (h.y0 + h.y1 + 1) / 2 * TS;
+    const dx = pl.spr.x - cx, dy = pl.spr.y - cy, mode = G().state.mode === 'bike' ? 'b' : 'f';
+    if (Math.hypot(dx, dy) > LAP_R) { lap.acc = 0; lap.last = null; lap.seq = ''; return; }   // went away: start over
+    if (lap.mode !== mode) { lap.acc = 0; lap.mode = mode; }                                     // changed bike/foot: this circle starts over
+    const a = Math.atan2(dy, dx);
+    if (lap.last != null) { let d = a - lap.last; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; lap.acc += d; }
+    lap.last = a;
+    if (Math.abs(lap.acc) >= 2 * Math.PI - 0.05) {
+      lap.acc = 0; lap.seq = (lap.seq + mode).slice(-4);
+      floatUp(scene, pl.spr.x, pl.spr.y - 22, '✨', { size: 5, rise: 8, dur: 700 });
+      if (lap.seq === 'bbbf' && !ex().jaquesOpen) {
+        ex().jaquesOpen = true; G().save();
+        if (jaques) jaques.target.hidden = false;
+        beep([392, 523, 659, 523, 784], 'triangle', 0.05, 0.12);
+        LQ.UI.toast('🌿 Ritsel, ritsel... Helemaal rechtsboven op de kaart, in de verste struik, verstopt zich iemand!');
+      }
+    }
+  }
+  let jaques = null;
+  function findBush(map) {
+    const { W, H, objects, walk, T } = map, idx = (x, y) => y * W + x;
+    // which tiles can Lenny reach from home?
+    const seen = new Uint8Array(W * H), q = [idx(map.home.door.x, map.home.door.y)]; seen[q[0]] = 1;
+    for (let k = 0; k < q.length; k++) { const i = q[k], x = i % W, y = (i / W) | 0;
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([a, b]) => { const nx = x + a, ny = y + b; if (nx < 0 || ny < 0 || nx >= W || ny >= H) return; const j = idx(nx, ny); if (!seen[j] && walk[j]) { seen[j] = 1; q.push(j); } }); }
+    let best = null;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (objects[idx(x, y)] !== T.BUSH) continue;
+      const n = [[0, 1], [-1, 0], [1, 0], [0, -1]].map(([a, b]) => ({ x: x + a, y: y + b })).find(p => p.x >= 0 && p.y >= 0 && p.x < W && p.y < H && seen[idx(p.x, p.y)]);
+      if (!n) continue;
+      const score = x - y;       // furthest to the top right
+      if (!best || score > best.score) best = { x, y, n, score };
+    }
+    return best;
+  }
+  function addJaques(scene, map) {
+    const b = findBush(map); if (!b) return [];
+    if (!scene.textures.exists('jaques')) { const t = scene.textures.addCanvas('jaques', LQ.Sprites.jaquesSheet()); t.add(0, 0, 0, 0, 20, 24); t.add(1, 0, 20, 0, 20, 24); }
+    if (!scene.anims.exists('jaques-tremble')) scene.anims.create({ key: 'jaques-tremble', frames: [0, 1, 0, 1, 0, 0, 1, 0].map(n => ({ key: 'jaques', frame: n })), frameRate: 9, repeat: -1 });
+    // he sits tucked in right behind the bush (a copy of the bush is drawn in
+    // front of him, so it half covers him); invisible until he is found
+    const jx = b.x * TS + 15, jy = b.y * TS + 15;
+    const spr = scene.add.sprite(jx, jy, 'jaques', 0).setOrigin(0.5, 1).setDepth(jy).play('jaques-tremble').setVisible(!!ex().jaquesFound);
+    const front = scene.add.image(b.x * TS + 8, b.y * TS + 16, 'tiles', map.T.BUSH).setOrigin(0.5, 1).setDepth(jy + 1);
+    const target = { kind: 'bush', x: b.n.x * TS + 8, y: b.n.y * TS + 12, label: ex().jaquesFound ? '📱 Jaques' : '🌿 Struik', hidden: !ex().jaquesOpen, open: () => openBush() };
+    jaques = { spr, scene, target, bush: b, front };
+    scene.events.once('shutdown', () => { jaques = null; });
+    return [target];
+  }
+  const JAQUES_SAYS = ['O! Hoi Lenny... Ik zat hier even rustig op mijn telefoon. Niet verder vertellen, hè? 🤫', 'Hé Lenny! Goed verstopt, toch? Hoe heb je me gevonden?', 'Ssst... ik lees even het nieuws. Welke school vond jij het leukst?'];
+  function openBush() {
+    if (!jaques) return;
+    if (!ex().jaquesOpen) return;                  // just a bush, nothing happens
+    const s = jaques.scene, spr = jaques.spr;
+    if (!spr.visible) {
+      spr.setVisible(true).setAlpha(0).setY(spr.y + 6);
+      s.tweens.add({ targets: spr, alpha: 1, y: spr.y - 6, duration: 600, ease: 'Back.out' });
+      s.tweens.add({ targets: jaques.front, angle: { from: -8, to: 8 }, yoyo: true, repeat: 3, duration: 90, onComplete: () => jaques && jaques.front.setAngle(0) });
+      ['🌿', '🍃', '🌿'].forEach((c, i) => floatUp(s, jaques.bush.x * TS + 2 + i * 6, jaques.bush.y * TS + 6, c, { size: 7, rise: 14, delay: i * 120 }));
+      ex().jaquesFound = true; G().save();
+      jaques.target.label = '📱 Jaques'; if (G().scene) G().scene.nearT = undefined;
+      beep([523, 440, 659], 'triangle', 0.05, 0.12);
+    }
+    LQ.UI.toast('Jaques: "' + JAQUES_SAYS[Math.floor(Math.random() * JAQUES_SAYS.length)] + '"');
+    return;
+  }
 
   /* ---------- Kit (and Fifi) walk along ---------- */
   const trail = [];
@@ -789,6 +864,7 @@ LQ.Extras = (function () {
     scene.events.on('update', (t, d) => {
       tickIdle(scene, d);
       tickKit(scene, d);
+      if (scene.scene.key === 'world') trackLaps(scene);
       const pl = G().player; // the cookie floats along with Lenny
       if (snackIcon && pl && snackIcon.scene === scene) snackIcon.setPosition(pl.spr.x + 7, pl.spr.y - 22 + Math.sin(t / 250));
       acc += d; if (acc > 300 && scene.scene.key === 'world') { acc = 0; checkAuto(scene); }

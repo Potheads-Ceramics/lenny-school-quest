@@ -835,6 +835,41 @@ LQ.Sprites = (function () {
     return sheet.c;
   }
 
+  /* Jaques (a hidden easter egg behind a bush): 64, short grey-brown hair,
+     dark glasses, black leather jacket over a striped blue shirt, jeans,
+     dark shoes (from a family photo). He sits hunched on a wooden chair with
+     his legs crossed, looking at his phone. 2 frames of 20x24: his hands,
+     phone and head shift a pixel, so he trembles a little. */
+  function jaquesSheet() {
+    const A = { hair: '#6b5646', hairG: '#9a8f84', skin: '#ecc3a3', skinD: '#d6a585', glass: '#26262c', lens: '#cfd9df',
+                coat: '#25252b', coatL: '#3c3c46', shirt: '#dfe6f2', stripe: '#6f8fc8', jeans: '#6f8fbf', jeansD: '#56719e',
+                shoe: '#2a2a30', wood: '#8a5a2b', woodD: '#6b4520', phone: '#2b2b30', screen: '#8fd8ff' };
+    const sheet = canvas(40, 24);
+    for (let f = 0; f < 2; f++) {
+      const cell = canvas(20, 24), r = painter(cell.ctx, 0, 0), t = f; // t: tremble offset
+      // chair back and legs
+      r(4, 8, 1, 10, A.wood); r(15, 8, 1, 10, A.wood); r(4, 8, 12, 2, A.wood); r(4, 9, 12, 1, A.woodD);
+      r(3, 17, 14, 2, A.wood); r(3, 18, 14, 1, A.woodD); r(3, 19, 1, 5, A.woodD); r(16, 19, 1, 5, A.woodD);
+      // hunched body: black leather jacket, striped shirt at the neck
+      r(5, 11, 10, 6, A.coat); r(6, 11, 1, 5, A.coatL); r(13, 12, 1, 4, A.coatL);
+      r(9, 11, 2, 3, A.shirt); r(9, 12, 1, 1, A.stripe); r(10, 11, 1, 1, A.stripe); r(10, 13, 1, 1, A.stripe);
+      // head bent forward and down, looking at the phone
+      r(6 + t, 2, 8, 2, A.hair); r(5 + t, 3, 10, 2, A.hair); r(7 + t, 2, 2, 1, A.hairG); r(12 + t, 3, 2, 1, A.hairG); r(5 + t, 5, 1, 2, A.hairG); r(14 + t, 5, 1, 2, A.hairG);
+      r(6 + t, 5, 8, 6, A.skin); r(6 + t, 5, 8, 1, A.hair);
+      r(6 + t, 7, 3, 2, A.glass); r(11 + t, 7, 3, 2, A.glass); r(9 + t, 7, 2, 1, A.glass); r(7 + t, 8, 1, 1, A.lens); r(12 + t, 8, 1, 1, A.lens);
+      r(9 + t, 9, 2, 1, A.skinD); r(8 + t, 10, 4, 1, A.skinD);
+      // arms bent in, hands holding the phone low in front of him
+      r(4, 12, 2, 5, A.coat); r(14, 12, 2, 5, A.coat); r(6, 15, 2, 2, A.coat); r(12, 15, 2, 2, A.coat);
+      r(7 + t, 15, 2, 2, A.skin); r(11 + t, 15, 2, 2, A.skin); r(9 + t, 14, 2, 3, A.phone); r(9 + t, 14, 2, 2, A.screen);
+      // legs crossed: right leg over the left knee, foot sticking out to the side
+      r(5, 17, 5, 2, A.jeans); r(5, 19, 2, 3, A.jeans); r(5, 21, 2, 1, A.jeansD); r(4, 22, 4, 2, A.shoe);
+      r(8, 16, 8, 2, A.jeans); r(8, 17, 8, 1, A.jeansD); r(15, 15 + (t ? 1 : 0), 3, 2, A.shoe);
+      outline(cell.ctx, 20, 24, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 20, 0);
+    }
+    return sheet.c;
+  }
+
   /* Speech bubbles above people: "!" = challenge waiting, tick = done. */
   function bubble(kind) {
     const k = canvas(13, 14), r = painter(k.ctx, 1, 1);
@@ -846,5 +881,5 @@ LQ.Sprites = (function () {
     return k.c;
   }
 
-  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, jiskaSheet, chopBlock, luciaSheet, karaoke, bubble, TILE, colors: C };
+  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, jiskaSheet, chopBlock, luciaSheet, karaoke, jaquesSheet, bubble, TILE, colors: C };
 })();
