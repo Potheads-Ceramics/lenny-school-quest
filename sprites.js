@@ -739,9 +739,9 @@ LQ.Sprites = (function () {
     for (let f = 0; f < 4; f++) {
       const cell = canvas(20, 24), r = painter(cell.ctx, 2, 0);
       // wavy blond hair, pulled back with loose curls at the sides
-      r(4, 0, 8, 2, A.hair); r(3, 1, 10, 4, A.hair); r(2, 4, 3, 6, A.hair); r(11, 4, 3, 6, A.hair); r(12, 9, 2, 2, A.hair);
-      [[5, 0], [9, 1], [3, 2], [12, 3], [2, 6], [13, 7]].forEach(([x, y]) => r(x, y, 1, 1, A.hairL));
-      [[7, 1], [4, 5], [11, 5], [2, 8], [13, 9]].forEach(([x, y]) => r(x, y, 1, 1, A.hairD));
+      r(4, 0, 8, 2, A.hair); r(3, 1, 10, 4, A.hair); r(3, 4, 2, 6, A.hair); r(11, 4, 2, 6, A.hair); r(11, 9, 2, 2, A.hair);
+      [[5, 0], [9, 1], [3, 2], [12, 3], [3, 6], [12, 7]].forEach(([x, y]) => r(x, y, 1, 1, A.hairL));
+      [[7, 1], [4, 5], [11, 5], [3, 8], [12, 9]].forEach(([x, y]) => r(x, y, 1, 1, A.hairD));
       // face with round glasses and a big smile
       r(5, 4, 6, 7, A.skin); r(5, 4, 6, 1, A.hair);
       r(4, 6, 4, 3, A.glass); r(9, 6, 4, 3, A.glass); r(5, 7, 2, 1, A.lens); r(10, 7, 2, 1, A.lens); r(8, 7, 1, 1, A.glass);
@@ -749,19 +749,19 @@ LQ.Sprites = (function () {
       r(6, 9, 4, 1, A.mouth); r(7, 10, 2, 1, '#ffffff'); r(5, 10, 1, 1, A.skinD); r(10, 10, 1, 1, A.skinD);
       r(7, 11, 2, 1, A.skin);
       // navy jacket with a zip and a chest strap (backpack)
-      r(3, 12, 10, 7, A.coat); r(8, 12, 1, 7, A.coatD); r(4, 12, 1, 1, A.coatL); r(11, 12, 1, 1, A.coatL); r(3, 15, 10, 1, A.coatD);
+      r(5, 12, 6, 7, A.coat); r(8, 12, 1, 7, A.coatD); r(5, 12, 1, 1, A.coatL); r(10, 12, 1, 1, A.coatL); r(5, 15, 6, 1, A.coatD);
       if (f < 2) {
         // both hands on the axe handle
         const up = f === 0;
-        r(2, 13, 1, 4, A.coat); r(13, 13, 1, 4, A.coat);
-        if (up) { r(3, 9, 2, 4, A.coat); r(11, 9, 2, 4, A.coat); r(7, 7, 2, 2, A.skin); r(7, 1, 2, 7, A.handle); r(4, -1 + 1, 6, 3, A.axe); r(4, 1, 6, 1, A.axeD); }
-        else { r(4, 17, 2, 1, A.skin); r(10, 17, 2, 1, A.skin); r(6, 17, 9, 1, A.handle); r(14, 15, 3, 5, A.axe); r(14, 19, 3, 1, A.axeD); }
+        r(4, 13, 1, 4, A.coat); r(11, 13, 1, 4, A.coat);
+        if (up) { r(5, 9, 2, 4, A.coat); r(9, 9, 2, 4, A.coat); r(7, 7, 2, 2, A.skin); r(7, 1, 2, 7, A.handle); r(4, -1 + 1, 6, 3, A.axe); r(4, 1, 6, 1, A.axeD); }
+        else { r(5, 17, 2, 1, A.skin); r(9, 17, 2, 1, A.skin); r(6, 17, 9, 1, A.handle); r(14, 15, 3, 5, A.axe); r(14, 19, 3, 1, A.axeD); }
       } else {
-        r(2, 13, 1, 4, A.coat); r(2, 17, 1, 1, A.skin);
-        if (f === 2) { r(13, 10, 2, 3, A.coat); r(15, 8, 1, 3, A.coat); r(15, 5, 2, 3, A.skin); }
-        else { r(13, 10, 2, 3, A.coat); r(15, 10, 1, 1, A.coat); r(16, 8, 2, 2, A.skin); }
+        r(4, 13, 1, 4, A.coat); r(4, 17, 1, 1, A.skin);
+        if (f === 2) { r(11, 10, 2, 3, A.coat); r(13, 8, 1, 3, A.coat); r(13, 5, 2, 3, A.skin); }
+        else { r(11, 10, 2, 3, A.coat); r(13, 10, 1, 1, A.coat); r(14, 8, 2, 2, A.skin); }
       }
-      r(4, 19, 8, 2, A.pants); r(5, 21, 2, 1, A.pants); r(9, 21, 2, 1, A.pants); r(5, 22, 3, 1, A.shoe); r(8, 22, 3, 1, A.shoe);
+      r(5, 19, 6, 2, A.pants); r(5, 21, 2, 1, A.pants); r(9, 21, 2, 1, A.pants); r(5, 22, 2, 1, A.shoe); r(9, 22, 2, 1, A.shoe);
       outline(cell.ctx, 20, 24, C.outline);
       sheet.ctx.drawImage(cell.c, f * 20, 0);
     }
