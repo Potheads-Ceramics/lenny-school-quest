@@ -84,7 +84,7 @@ LQ.Schools = (function () {
       }
       if (LQ.Extras) (LQ.Extras.addLandmark(scene, lm, l, x, y) || []).forEach(t => targets.push(t));
       const icon = { family: '🏡', shed: '🌻', playground: '🎡', zoo: '🦒', park: '🌳', roundabout: '🔄', streetsign: '🪧', primary: '🎒', football: '⚽' }[lm.kind] || '📍';
-      const top = lm.kind === 'roundabout' ? (lm.y0 - 1) * TS : y - ({ family: 48, shed: 36, playground: 50, zoo: 58, park: 28, streetsign: 28, primary: 52, football: 40 }[lm.kind] || 30);
+      const top = lm.kind === 'roundabout' ? (lm.y0 - 1) * TS : y - ({ family: 48, shed: 36, playground: 50, zoo: 70, park: 28, streetsign: 28, primary: 52, football: 40 }[lm.kind] || 30);
       const t = sign(scene, x, top, icon + ' ' + l.label);
       if (lm.kind === 'family' || lm.kind === 'shed' || lm.kind === 'primary' || lm.kind === 'football') t.setBackgroundColor('#ffe0e6');
       const d = lm.door;

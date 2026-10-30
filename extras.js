@@ -84,12 +84,9 @@ LQ.Extras = (function () {
       return 'Abu Ana komt naar buiten om je gedag te zeggen! 💛';
     },
     'dierentuin': (s, p) => {
-      const g = emo(s, p.x + 10, p.y - 26, '🦒', 16).setDepth(p.y - 1);
-      g.setAlpha(0);
-      s.tweens.add({ targets: g, y: p.y - 44, alpha: 1, duration: 500, ease: 'Back.out',
-        onComplete: () => s.tweens.add({ targets: g, angle: { from: -8, to: 8 }, yoyo: true, repeat: 2, duration: 220,
-          onComplete: () => s.tweens.add({ targets: g, y: p.y - 26, alpha: 0, duration: 450, onComplete: () => g.destroy() }) }) });
-      return 'Een giraf kijkt over het hek. Hoi Lenny! 🦒';
+      if (!giraffe || giraffe.busy) return giraffe ? null : 'Een giraf kijkt over het hek. Hoi Lenny! 🦒';
+      giraffeShow();
+      return 'De giraf heeft honger. Smakelijk eten! 🦒🌿';
     },
     'voetbal': () => { penalty(); return false; }, // false = no toast, the game opens instead
     'plaswijck': (s, p) => {
@@ -268,6 +265,7 @@ LQ.Extras = (function () {
     lms[l.id] = { x, y, scene, door: lm.door };
     if (l.id === 'mam') return [addFifi(scene, lm)];   // extra things to talk to
     if (l.id === 'blauwe-huisje') return [addJiska(scene, x, y)];
+    if (l.id === 'dierentuin') addGiraffe(scene, x, y);
     return [];
   }
 
@@ -541,6 +539,80 @@ LQ.Extras = (function () {
       }), h('button', { class: 'btn', onclick: () => LQ.UI.closePanel() }, 'Aai Fifi 🤍')])]);
   }
 
+
+  /* ---------- the giraffe at Diergaarde Blijdorp (31 Oct 2026) ----------
+     She lives behind the fence: blinks, sways a little and sometimes nibbles
+     the tree. When Lenny comes by (or taps the zoo), she stretches up, eats
+     leaves (leaves fall, birds fly out of the tree), chews, then looks at
+     Lenny with a happy face and little pixel hearts. */
+  let giraffe = null;
+  function addGiraffe(scene, x, y) {
+    if (!scene.textures.exists('giraffe')) { const t = scene.textures.addCanvas('giraffe', LQ.Sprites.giraffeSheet()); for (let f = 0; f < 5; f++) t.add(f, 0, f * 24, 0, 24, 36); }
+    if (!scene.textures.exists('bird')) { const t = scene.textures.addCanvas('bird', LQ.Sprites.birdSheet()); t.add(0, 0, 0, 0, 7, 5); t.add(1, 0, 7, 0, 7, 5); }
+    if (!scene.anims.exists('giraffe-idle')) scene.anims.create({ key: 'giraffe-idle', frames: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1].map(n => ({ key: 'giraffe', frame: n })), frameRate: 4, repeat: -1 });
+    if (!scene.anims.exists('giraffe-chew')) scene.anims.create({ key: 'giraffe-chew', frames: [2, 3].map(n => ({ key: 'giraffe', frame: n })), frameRate: 5, repeat: -1 });
+    if (!scene.anims.exists('bird-fly')) scene.anims.create({ key: 'bird-fly', frames: [0, 1].map(n => ({ key: 'bird', frame: n })), frameRate: 10, repeat: -1 });
+    // the zoo picture is 64x56, drawn with its bottom at y + 2; the giraffe stands behind the fence
+    const top = y + 2 - 56, gx = x + 2, gy = top + 37;
+    const spr = scene.add.sprite(gx, gy, 'giraffe', 0).setOrigin(0.5, 1).setDepth(y - 1).play('giraffe-idle');
+    // a slow, gentle sway
+    const sway = scene.tweens.add({ targets: spr, x: gx + 1, yoyo: true, repeat: -1, duration: 1400, ease: 'Sine.inOut' });
+    giraffe = { spr, scene, gx, gy, tree: { x: x + 16, y: top + 12 }, busy: false, sway };
+    // now and then she nibbles the tree by herself
+    const nib = scene.time.addEvent({ delay: 9000, loop: true, callback: () => { if (giraffe && !giraffe.busy && Math.random() < 0.6) giraffeNibble(false); } });
+    scene.events.once('shutdown', () => { giraffe = null; nib.remove(); });
+  }
+  function leafFall(s, x, y, n) {
+    const cols = [0x4d9a42, 0x3f8a3a, 0x8cc463];
+    for (let i = 0; i < n; i++) {
+      const l = s.add.rectangle(x + (Math.random() * 10 - 5), y + (Math.random() * 4), 2, 2, cols[i % 3]).setDepth(giraffe ? giraffe.spr.depth + 2 : 1e5);
+      s.tweens.add({ targets: l, y: l.y + 14 + Math.random() * 10, x: l.x + (Math.random() * 12 - 6), angle: 180, alpha: 0, delay: i * 90, duration: 1100 + Math.random() * 500, ease: 'Sine.in', onComplete: () => l.destroy() });
+    }
+  }
+  function birdsFly(s, x, y) {
+    [0, 1].forEach(i => {
+      const b = s.add.sprite(x + i * 4, y + i * 2, 'bird', 0).setDepth(100001).play('bird-fly');
+      const dir = i ? -1 : 1;
+      b.setFlipX(dir < 0);
+      s.tweens.add({ targets: b, x: x + dir * (50 + i * 20), y: y - 30 - i * 10, delay: i * 150, duration: 1600, ease: 'Sine.out', onComplete: () => b.destroy() });
+      s.tweens.add({ targets: b, alpha: 0, delay: 1200 + i * 150, duration: 400 });
+    });
+  }
+  // a small heart made of pixels (not an emoji), floating up
+  function pixelHeart(s, x, y, delay) {
+    const g = s.add.graphics().setDepth(100002).setPosition(x, y).setAlpha(0);
+    g.fillStyle(0x2b1d16, 1); [[1, 0, 2], [4, 0, 2], [0, 1, 7], [0, 2, 7], [1, 3, 5], [2, 4, 3], [3, 5, 1]].forEach(([a, b, w]) => g.fillRect(a - 0.5, b - 0.5, w + 1, 2));
+    g.fillStyle(0xe8475f, 1); [[1, 0, 2], [4, 0, 2], [0, 1, 7], [0, 2, 7], [1, 3, 5], [2, 4, 3], [3, 5, 1]].forEach(([a, b, w]) => g.fillRect(a, b, w, 1));
+    g.fillStyle(0xffffff, 1); g.fillRect(1, 1, 1, 1);
+    s.tweens.add({ targets: g, alpha: 1, duration: 200, delay });
+    s.tweens.add({ targets: g, y: y - 16, x: x + (Math.random() * 6 - 3), delay, duration: 1500, ease: 'Sine.out' });
+    s.tweens.add({ targets: g, alpha: 0, delay: delay + 1100, duration: 400, onComplete: () => g.destroy() });
+  }
+  // just a nibble (also happens by itself)
+  function giraffeNibble(big, done) {
+    if (!giraffe || !giraffe.spr.scene) return;
+    const s = giraffe.scene, spr = giraffe.spr; giraffe.busy = true;
+    spr.anims.stop(); spr.setFrame(2);
+    s.tweens.add({ targets: spr, y: giraffe.gy - (big ? 2 : 1), duration: 400, ease: 'Sine.out' });
+    s.time.delayedCall(350, () => { leafFall(s, giraffe.tree.x, giraffe.tree.y, big ? 7 : 3); if (big) birdsFly(s, giraffe.tree.x + 2, giraffe.tree.y - 2); beep([880, 660], 'triangle', 0.03, 0.05); });
+    s.time.delayedCall(900, () => spr.play('giraffe-chew'));
+    s.time.delayedCall(big ? 2600 : 1800, () => {
+      spr.anims.stop(); spr.setFrame(0);
+      s.tweens.add({ targets: spr, y: giraffe.gy, duration: 400, ease: 'Sine.inOut', onComplete: () => { if (done) done(); else { spr.play('giraffe-idle'); giraffe.busy = false; } } });
+    });
+  }
+  // the full show when Lenny visits
+  function giraffeShow() {
+    giraffeNibble(true, () => {
+      if (!giraffe) return;
+      const s = giraffe.scene, spr = giraffe.spr;
+      spr.setFrame(4);
+      s.tweens.add({ targets: spr, y: giraffe.gy - 3, yoyo: true, duration: 250, repeat: 1 });
+      [0, 250, 500].forEach((d, i) => pixelHeart(s, spr.x + 6 + i * 3, spr.y - 32, d));
+      beep([659, 784, 1046], 'triangle', 0.05, 0.1);
+      s.time.delayedCall(1800, () => { if (giraffe && giraffe.spr.scene) { spr.play('giraffe-idle'); giraffe.busy = false; } });
+    });
+  }
 
   /* ---------- Jiska, chopping wood at la casita azul ---------- */
   let jiska = null;

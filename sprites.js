@@ -417,10 +417,9 @@ LQ.Sprites = (function () {
       r(36, 9, 1, 7, '#3b3b44'); r(37, 9, 7, 4, '#3fb27f');
       r(26, 36, 6, 4, '#e8d9a8');
     } else if (kind === 'zoo') {
-      // zoo gate with a giraffe peeking over it (original art)
+      // zoo gate with a tree; the giraffe behind it is animated separately
       make(64, 56);
-      r(40, 6, 4, 26, '#e7b44a'); r(38, 2, 8, 6, '#e7b44a'); r(36, 3, 2, 2, '#e7b44a'); r(46, 3, 1, 3, '#7a4b2a'); r(39, 0, 1, 3, '#7a4b2a'); r(43, 0, 1, 3, '#7a4b2a');
-      [[41, 10], [42, 16], [40, 21], [42, 26], [40, 4]].forEach(([x, y]) => r(x, y, 2, 2, '#9b5a22')); r(44, 4, 1, 1, '#2b1d16');
+      // (the giraffe is its own animated sprite now: giraffeSheet, extras.js)
       r(52, 20, 3, 18, '#6b4a2b'); r(46, 14, 14, 8, '#3f8a3a'); r(48, 11, 9, 4, '#4d9a42');
       r(2, 22, 10, 32, '#b9a68a'); r(52, 30, 10, 24, '#b9a68a'); r(2, 20, 10, 3, '#8f7d62'); r(52, 28, 10, 3, '#8f7d62');
       r(2, 22, 60, 8, '#3f8a3a'); r(2, 22, 60, 2, '#2f6e2c');
@@ -835,6 +834,58 @@ LQ.Sprites = (function () {
     return sheet.c;
   }
 
+  /* The giraffe behind the zoo fence (original art), 24x36, facing right.
+     Frames: 0 looking, 1 blink, 2 neck stretched to the tree (eating),
+     3 chewing (mouth moves), 4 looking at you with a happy face. */
+  function giraffeSheet() {
+    const Y = '#e9b64c', YL = '#f6d27c', Sp = '#9b5a22', D = '#2b1d16', M = '#d99a6a', H = '#7a4b2a';
+    const sheet = canvas(120, 36);
+    for (let f = 0; f < 5; f++) {
+      const cell = canvas(24, 36), r = painter(cell.ctx, 0, 0);
+      const eat = f === 2 || f === 3;
+      // legs and body (mostly behind the fence)
+      [3, 6, 12, 15].forEach(x => { r(x, 30, 2, 6, Y); r(x, 34, 2, 2, H); });
+      r(2, 22, 16, 9, Y); r(3, 22, 14, 1, YL);
+      [[4, 24], [9, 23], [13, 25], [6, 28], [11, 28], [15, 28]].forEach(([x, y]) => r(x, y, 3, 2, Sp));
+      r(0, 23, 2, 1, Y); r(0, 24, 1, 4, H); // tail
+      // neck: straight up, or bent forward to the tree
+      if (!eat) {
+        r(13, 6, 4, 17, Y); r(13, 6, 1, 17, YL); [[14, 9], [15, 14], [13, 18]].forEach(([x, y]) => r(x, y, 2, 2, Sp));
+        r(12, 7, 1, 14, H); // mane
+        // head
+        r(13, 2, 7, 5, Y); r(19, 4, 3, 3, M); r(13, 2, 7, 1, YL);
+        r(14, 0, 1, 2, H); r(17, 0, 1, 2, H); r(14, 0, 1, 1, D); r(17, 0, 1, 1, D); // ossicones
+        r(12, 3, 2, 1, Y); // ear
+        if (f === 1) r(17, 4, 2, 1, D); else { r(17, 3, 1, 2, D); r(18, 3, 1, 1, '#ffffff'); }
+        if (f === 4) { r(20, 6, 2, 1, D); r(16, 5, 1, 1, '#f08a8a'); } else r(21, 6, 1, 1, D);
+      } else {
+        // neck bending forward to the tree, head lower and to the right
+        for (let i = 0; i < 7; i++) r(13 + i, 20 - i * 2, 4, 3, Y);
+        [[14, 17], [16, 13], [18, 10]].forEach(([x, y]) => r(x, y, 2, 2, Sp));
+        r(12, 18, 1, 3, H); r(13, 14, 1, 3, H);
+        r(17, 6, 6, 5, Y); r(21, 8, 3, 3, M); r(17, 6, 6, 1, YL);
+        r(18, 4, 1, 2, H); r(20, 4, 1, 2, H); r(18, 4, 1, 1, D); r(20, 4, 1, 1, D);
+        r(19, 7, 1, 2, D);
+        if (f === 3) r(21, 10, 3, 1, D); else r(22, 10, 2, 1, D);
+      }
+      outline(cell.ctx, 24, 36, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 24, 0);
+    }
+    return sheet.c;
+  }
+  /* A little bird (7x5): 2 frames, wings up / down. */
+  function birdSheet() {
+    const sheet = canvas(14, 5);
+    for (let f = 0; f < 2; f++) {
+      const cell = canvas(7, 5), r = painter(cell.ctx, 0, 0);
+      r(2, 2, 3, 2, '#3b3b44'); r(5, 2, 1, 1, '#f4c430');
+      if (f) { r(0, 0, 2, 1, '#3b3b44'); r(1, 1, 1, 1, '#3b3b44'); r(4, 0, 2, 1, '#3b3b44'); r(4, 1, 1, 1, '#3b3b44'); }
+      else { r(0, 3, 2, 1, '#3b3b44'); r(1, 2, 1, 1, '#3b3b44'); r(5, 3, 2, 1, '#3b3b44'); }
+      sheet.ctx.drawImage(cell.c, f * 7, 0);
+    }
+    return sheet.c;
+  }
+
   /* Speech bubbles above people: "!" = challenge waiting, tick = done. */
   function bubble(kind) {
     const k = canvas(13, 14), r = painter(k.ctx, 1, 1);
@@ -846,5 +897,5 @@ LQ.Sprites = (function () {
     return k.c;
   }
 
-  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, jiskaSheet, chopBlock, luciaSheet, karaoke, bubble, TILE, colors: C };
+  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, jiskaSheet, chopBlock, luciaSheet, karaoke, giraffeSheet, birdSheet, bubble, TILE, colors: C };
 })();
