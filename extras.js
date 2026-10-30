@@ -126,8 +126,8 @@ LQ.Extras = (function () {
     },
     'blauwe-huisje': (s, p) => {
       ['🥕', '🌻', '🍅'].forEach((c, i) => floatUp(s, p.x - 10 + i * 10, p.y - 8, c, { size: 9, rise: 20, delay: i * 200 }));
-      jiskaChat();
-      return false; // Jiska's chat opens instead of a toast
+      jiskaWave();
+      return null; // keep the normal text
     },
 
   };
@@ -563,84 +563,22 @@ LQ.Extras = (function () {
       block.setFrame(1); scene.time.delayedCall(500, () => block.setFrame(0));
       if (Math.random() < 0.6) floatUp(scene, jx + 12 + (Math.random() * 8 - 4), jy - 8, '🪵', { size: 5, rise: 8, dur: 600, drift: Math.random() * 10 - 5 });
     });
-    const target = { kind: 'jiska', x: jx, y: jy - 2, label: '🪓 Jiska', open: () => jiskaChat() };
+    const target = { kind: 'jiska', x: jx, y: jy - 2, label: '🪓 Jiska', open: () => jiskaWave() };
     jiska = { spr, block, scene };
     scene.events.once('shutdown', () => { jiska = null; });
     return target;
   }
-  const JISKA_HI = 'Hoi Lenny! Ik hak hout voor het kampvuurtje bij la casita azul. Help je even mee?';
-  function jiskaChat() {
-    const C = LQ.Challenges, h = LQ.h;
-    if (jiska) jiska.spr.play('jiska-wave');
-    const body = LQ.UI.openPanel('Jiska');
-    const back = () => { if (jiska && jiska.spr.scene) jiska.spr.play('jiska-chop'); };
-    C.screen(body, [jiskaFace(C.say(JISKA_HI, 'Jiska')),
-      C.row([C.next('🪓 Ja, ik help mee!', () => chopGame(body, back)), h('button', { class: 'btn', onclick: () => { LQ.UI.closePanel(); back(); } }, 'Nu even niet, doei Jiska! 👋')])]);
-    watchClose(body, back);
-  }
-  function jiskaFace(el) {
-    try { const f = document.createElement('canvas'); f.width = 20; f.height = 14; f.getContext('2d').drawImage(LQ.Sprites.jiskaSheet(), 40, 0, 20, 14, 0, 0, 20, 14); f.className = 'mami-face'; const w = el.querySelector('.who'); if (w) w.prepend(f); el.classList.add('fam-say'); } catch (e) {}
-    return el;
-  }
-  function watchClose(body, fn) {
-    const veil = document.getElementById('veil'); if (!veil) return;
-    const obs = new MutationObserver(() => { if (veil.hidden || !body.isConnected) { obs.disconnect(); fn(); } });
-    obs.observe(veil, { attributes: true, attributeFilter: ['hidden'] });
-  }
-  /* Three logs, tap "Hak!" when the axe is up. About 10 seconds, no points. */
-  function chopGame(body, after) {
-    const C = LQ.Challenges, h = LQ.h;
-    const W = 240, H = 150, dpr = Math.min(3, window.devicePixelRatio || 1);
-    const cv = document.createElement('canvas'); cv.width = W * dpr; cv.height = H * dpr; cv.className = 'pen-cv';
-    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
-    const info = h('p', { class: 'lead center-t', 'aria-live': 'polite' }, 'Tik op "Hak!" of op het blok. Drie blokken hout.');
-    const btn = h('button', { class: 'btn primary big', onclick: () => hit() }, '🪓 Hak!');
-    const done = h('button', { class: 'btn', hidden: true, onclick: () => { LQ.UI.closePanel(); } }, 'Klaar 👋');
-    C.screen(body, [jiskaFace(C.say('Hout op het blok... en hak! Niet te hard, hoor.', 'Jiska')), h('div', { class: 'pen-wrap' }, cv), info, C.row([btn, done])]);
-    let logs = 0, split = 0, swing = 0, raf, chips = [];
-    function hit() {
-      if (logs >= 3 || swing > 0) return;
-      swing = 1; beep([196, 147], 'square', 0.05, 0.06);
-      setTimeout(() => {
-        split = 1; logs++;
-        for (let i = 0; i < 6; i++) chips.push({ x: 120, y: 92, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 60, t: 0 });
-        info.textContent = logs < 3 ? `Krak! Nog ${3 - logs} ${3 - logs === 1 ? 'blok' : 'blokken'}.` : 'Top! Genoeg hout voor een warm vuurtje. 🔥';
-        setTimeout(() => { split = 0; swing = 0; if (logs >= 3) finish(); }, 650);
-      }, 180);
-    }
-    function finish() {
-      btn.hidden = true; done.hidden = false; beep([392, 523, 659, 784], 'triangle', 0.05, 0.1);
-      const first = body.querySelector('.bubble'), thanks = jiskaFace(C.say('Dankjewel, Lenny! Jij bent een echte houthakker. Kom je straks een marshmallow roosteren? 🔥', 'Jiska'));
-      if (first) first.replaceWith(thanks); else body.prepend(thanks);
-      if (jiska && jiska.spr.scene) floatUp(jiska.scene, jiska.spr.x + 12, jiska.spr.y - 4, '🔥', { size: 10, rise: 16, dur: 3000 });
-    }
-    function draw(dt) {
-      ctx.fillStyle = '#7fbf5a'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#6aa84a'; for (let x = 0; x < W; x += 24) ctx.fillRect(x, 0, 12, H);
-      // the pile of chopped wood
-      for (let i = 0; i < logs * 2; i++) { const px = 30 + (i % 4) * 10, py = 120 - Math.floor(i / 4) * 8; ctx.fillStyle = '#9a6a3c'; ctx.fillRect(px, py, 9, 7); ctx.fillStyle = '#e3c493'; ctx.fillRect(px, py, 9, 2); }
-      // chopping block
-      ctx.fillStyle = '#6b4a2b'; ctx.fillRect(95, 100, 50, 26); ctx.fillStyle = '#c79a5e'; ctx.fillRect(95, 100, 50, 5);
-      if (logs < 3 || split) {
-        ctx.fillStyle = '#9a6a3c';
-        if (!split) { ctx.fillRect(108, 70, 24, 30); ctx.fillStyle = '#e3c493'; ctx.fillRect(108, 70, 24, 5); }
-        else { ctx.fillRect(98, 76, 14, 24); ctx.fillRect(128, 76, 14, 24); ctx.fillStyle = '#e3c493'; ctx.fillRect(98, 76, 14, 4); ctx.fillRect(128, 76, 14, 4); }
-      }
-      // axe: up, or coming down
-      const a = swing ? 0.45 : 1.35, cx = 178, cy = 118;
-      ctx.save(); ctx.translate(cx, cy); ctx.rotate(a);
-      ctx.fillStyle = '#9a6a3c'; ctx.fillRect(-60, -3, 64, 6);
-      ctx.fillStyle = '#c9ccd1'; ctx.fillRect(-66, -14, 12, 24); ctx.fillStyle = '#8e9299'; ctx.fillRect(-66, -14, 3, 24);
-      ctx.restore();
-      chips = chips.filter(c => (c.t += dt) < 0.8);
-      chips.forEach(c => { c.x += c.vx * dt; c.y += c.vy * dt; c.vy += 300 * dt; ctx.fillStyle = '#c79a5e'; ctx.fillRect(c.x, c.y, 3, 3); });
-      ctx.fillStyle = 'rgba(43,29,22,.75)'; ctx.fillRect(6, 6, 74, 18); ctx.fillStyle = '#fff'; ctx.font = '600 12px Fredoka, sans-serif'; ctx.fillText(`🪵 ${logs} van 3`, 10, 19);
-    }
-    let last = 0;
-    function step(ts) { if (!cv.isConnected) { after && after(); return; } const dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts; draw(dt); raf = requestAnimationFrame(step); }
-    cv.addEventListener('pointerdown', (e) => { e.preventDefault(); hit(); });
-    const key = (e) => { if ((e.key === ' ' || e.key === 'Enter') && cv.isConnected) { e.preventDefault(); hit(); } else if (!cv.isConnected) document.removeEventListener('keydown', key); };
-    document.addEventListener('keydown', key);
-    raf = requestAnimationFrame(step);
+  /* Tap Jiska (or the casita): she stops, waves and says hi, then goes back
+     to chopping. Just the animation, no panel or game. */
+  const JISKA_HI = 'Hoi Lenny! Ik hak hout voor het kampvuurtje! 🪓';
+  function jiskaWave() {
+    if (!jiska || !jiska.spr.scene || jiska.busy) return;
+    const s = jiska.scene, spr = jiska.spr; jiska.busy = true;
+    spr.play('jiska-wave');
+    const say = s.add.text(spr.x, spr.y - 28, JISKA_HI, { fontFamily: '"Fredoka", sans-serif', fontSize: '8px', color: '#2b1d16', backgroundColor: '#fff3f6', padding: { x: 3, y: 1 }, resolution: 6 }).setOrigin(0.5, 1).setDepth(100003);
+    floatUp(s, spr.x + 6, spr.y - 22, '💛', { size: 8, rise: 18, delay: 200 });
+    beep([523, 659], 'triangle', 0.05, 0.1);
+    s.time.delayedCall(2600, () => { say.destroy(); if (jiska && jiska.spr.scene) { jiska.spr.play('jiska-chop'); jiska.busy = false; } });
   }
 
   /* ---------- Lucia, Lenny's little sister ----------
