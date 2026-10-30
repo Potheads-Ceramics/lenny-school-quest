@@ -302,7 +302,9 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
 #bm-close { margin-left: auto; font-family: var(--display), "Segoe UI Symbol", "Apple Symbols", sans-serif; font-size: 18px; line-height: 1; padding: 4px 11px; color: var(--ink); background: var(--parch); border: 2px solid var(--wood-dark); box-shadow: 0 3px 0 var(--wood-dark); }
 .bm-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr minmax(260px, 340px); }
 .bm-mapwrap { position: relative; min-height: 0; background: var(--sky); }
-#bm-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; }
+#bm-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; touch-action: none; }
+.bm-zoom { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; z-index: 2; }
+.bm-zoom button { width: 40px; height: 40px; font-family: var(--display); font-size: 22px; line-height: 1; background: var(--parch); color: var(--ink); border: 2px solid var(--wood-dark); box-shadow: 0 3px 0 var(--wood-dark); }
 .bm-side { display: flex; flex-direction: column; min-height: 0; border-left: 4px solid var(--wood-dark); }
 .bm-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 8px 10px; font-size: 13px; background: var(--parch-2); }
 .bm-legend span { white-space: nowrap; }
@@ -467,9 +469,9 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
   <div class="bm-panel">
     <header><h2 id="bm-title">Kaart</h2><span id="bm-mode"></span><button id="bm-close" aria-label="Kaart sluiten">✕ Sluiten</button></header>
     <div class="bm-body">
-      <div class="bm-mapwrap"><canvas id="bm-canvas" aria-label="Kaart van thuis en de scholen"></canvas></div>
+      <div class="bm-mapwrap"><canvas id="bm-canvas" aria-label="Kaart van thuis en de scholen"></canvas><div class="bm-zoom"><button id="bm-zin" type="button" aria-label="Inzoomen">＋</button><button id="bm-zout" type="button" aria-label="Uitzoomen">－</button></div></div>
       <div class="bm-side">
-        <div class="bm-legend"><span><b>👆 Tik op de kaart: dan ga je erheen!</b></span><span>🔵 Hier ben jij</span><span>❔ Nog niet bezocht</span><span>🎨 Bezocht</span><span>⭐ Alles klaar</span><span><b style="color:#c25a45">▬</b> Fietsroute</span><span class="osm">Kaart: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bijdragers</span></div>
+        <div class="bm-legend"><span><b>👆 Tik op de kaart: dan ga je erheen!</b></span><span>🔍 Knijp, scroll of ＋/－ om te zoomen, sleep om te schuiven</span><span>🔵 Hier ben jij</span><span>❔ Nog niet bezocht</span><span>🎨 Bezocht</span><span>⭐ Alles klaar</span><span><b style="color:#c25a45">▬</b> Fietsroute</span><span class="osm">Kaart: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bijdragers</span></div>
         <ul id="bm-list"></ul>
       </div>
     </div>
@@ -489,23 +491,23 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.70.0/phaser.min.js"></script>
-<script src="sprites.js?v=20261031-1"></script>
-<script src="map.js?v=20261031-1"></script>
-<script src="scoring.js?v=20261031-1"></script>
-<script src="music.js?v=20261031-1"></script>
-<script src="ui.js?v=20261031-1"></script>
-<script src="challenges.js?v=20261031-1"></script>
-<script src="coins.js?v=20261031-1"></script>
-<script src="player.js?v=20261031-1"></script>
-<script src="schools.js?v=20261031-1"></script>
-<script src="schoolgames.js?v=20261031-1"></script>
-<script src="interior.js?v=20261031-1"></script>
-<script src="extras.js?v=20261031-1"></script>
-<script src="words.js?v=20261031-1"></script>
-<script src="minimap.js?v=20261031-1"></script>
-<script src="joystick.js?v=20261031-1"></script>
-<script src="cloud-config.js?v=20261031-1"></script>
-<script src="cloud.js?v=20261031-1"></script>
-<script src="main.js?v=20261031-1"></script>
+<script src="sprites.js?v=20261031-2"></script>
+<script src="map.js?v=20261031-2"></script>
+<script src="scoring.js?v=20261031-2"></script>
+<script src="music.js?v=20261031-2"></script>
+<script src="ui.js?v=20261031-2"></script>
+<script src="challenges.js?v=20261031-2"></script>
+<script src="coins.js?v=20261031-2"></script>
+<script src="player.js?v=20261031-2"></script>
+<script src="schools.js?v=20261031-2"></script>
+<script src="schoolgames.js?v=20261031-2"></script>
+<script src="interior.js?v=20261031-2"></script>
+<script src="extras.js?v=20261031-2"></script>
+<script src="words.js?v=20261031-2"></script>
+<script src="minimap.js?v=20261031-2"></script>
+<script src="joystick.js?v=20261031-2"></script>
+<script src="cloud-config.js?v=20261031-2"></script>
+<script src="cloud.js?v=20261031-2"></script>
+<script src="main.js?v=20261031-2"></script>
 
 </body></html>

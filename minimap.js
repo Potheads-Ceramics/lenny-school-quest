@@ -113,7 +113,15 @@ LQ.Minimap = (function () {
     const g = cv.getContext('2d');
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.imageSmoothingEnabled = false;
-    const k = Math.min(cssW / map.W, cssH / map.H), ox = (cssW - map.W * k) / 2, oy = (cssH - map.H * k) / 2;
+    const k0 = Math.min(cssW / map.W, cssH / map.H);
+    let k = k0, ox = (cssW - map.W * k) / 2, oy = (cssH - map.H * k) / 2;
+    if (opts.big) { // zoom and pan (31 Oct 2026): view.z = zoom, view.cx/cy = tile in the middle
+      k = k0 * view.z;
+      const hw = cssW / 2 / k, hh = cssH / 2 / k;
+      view.cx = map.W <= hw * 2 ? map.W / 2 : Math.max(hw, Math.min(map.W - hw, view.cx));
+      view.cy = map.H <= hh * 2 ? map.H / 2 : Math.max(hh, Math.min(map.H - hh, view.cy));
+      ox = cssW / 2 - view.cx * k; oy = cssH / 2 - view.cy * k;
+    }
     g.fillStyle = COL.water; g.fillRect(0, 0, cssW, cssH);
     g.drawImage(base, ox, oy, map.W * k, map.H * k);
     const P = (tx, ty) => ({ x: ox + (tx + 0.5) * k, y: oy + (ty + 0.5) * k });
@@ -172,7 +180,7 @@ LQ.Minimap = (function () {
       lennyIcon(g, p.x, p.y, opts.big ? Math.max(5, r * 0.6) : Math.max(3, r * 0.6), pl.dir);
       if (opts.big) label('Hier ben jij', p.x, p.y - r * 2.6 - 4, true);
     }
-    return { hits, xf: { k, ox, oy } };
+    return { hits, xf: { k, ox, oy, k0, cssW, cssH } };
   }
 
   /* ---------------- the small map ---------------- */
@@ -211,6 +219,7 @@ LQ.Minimap = (function () {
     open = true;
     if (G.player && !dest) G.player.stop(); // a trip picked on the map just waits while the map is open
     $('bigmap').hidden = false;
+    view.z = 1; view.cx = map.W / 2; view.cy = map.H / 2;
     $('bm-mode').textContent = G.state.mode === 'bike' ? '🚲 Met de fiets' : '🚶 Lopend';
     list();
     requestAnimationFrame(drawBig);
@@ -222,6 +231,19 @@ LQ.Minimap = (function () {
     if (G.activeScene && G.activeScene.input) G.activeScene.input.keyboard.resetKeys();
   }
   let bigHits = [], bigXf = null, dest = null;
+  const view = { z: 1, cx: 0, cy: 0 };
+  const ZMAX = 8;
+  // zoom by factor f, keeping the spot under (px, py) in place
+  function zoomAt(px, py, f) {
+    if (!bigXf) return;
+    const { k, ox, oy, k0, cssW, cssH } = bigXf;
+    const tx = (px - ox) / k, ty = (py - oy) / k;
+    view.z = Math.max(1, Math.min(ZMAX, view.z * f));
+    const k2 = k0 * view.z;
+    view.cx = tx - (px - cssW / 2) / k2; view.cy = ty - (py - cssH / 2) / k2;
+    drawBig();
+  }
+  function zoomBtn(f) { if (bigXf) zoomAt(bigXf.cssW / 2, bigXf.cssH / 2, f); }
   function drawBig() { if (!open) return; const res = draw($('bm-canvas'), { big: true }); bigHits = res ? res.hits : []; bigXf = res ? res.xf : null; }
   /* Tap anywhere on the big map: Lenny walks or rides there by himself (30 Oct 2026). */
   function travelTo(x, y) {
@@ -324,7 +346,30 @@ LQ.Minimap = (function () {
     $('bm-close').addEventListener('click', closeBig);
     $('minimap').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target === $('minimap')) { e.preventDefault(); openBig(); } });
     $('bigmap').addEventListener('click', (e) => { if (e.target === $('bigmap')) closeBig(); });
+    // drag to move the map, pinch or mouse wheel (or + / −) to zoom
+    const cvs = $('bm-canvas'), ptrs = new Map(); let moved = 0, pinch = 0;
+    const pos = (e) => { const r = cvs.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+    cvs.addEventListener('pointerdown', (e) => { ptrs.set(e.pointerId, pos(e)); if (ptrs.size === 1) moved = 0; try { cvs.setPointerCapture(e.pointerId); } catch (er) {} });
+    cvs.addEventListener('pointermove', (e) => {
+      if (!ptrs.has(e.pointerId) || !bigXf) return;
+      const p = pos(e), old = ptrs.get(e.pointerId);
+      if (ptrs.size === 1) {
+        const dx = p.x - old.x, dy = p.y - old.y; moved += Math.abs(dx) + Math.abs(dy);
+        if (moved > 6) { view.cx -= dx / bigXf.k; view.cy -= dy / bigXf.k; drawBig(); }
+        ptrs.set(e.pointerId, p);
+      } else if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()], other = a === old ? b : a;
+        const d0 = Math.hypot(old.x - other.x, old.y - other.y), d1 = Math.hypot(p.x - other.x, p.y - other.y);
+        ptrs.set(e.pointerId, p); moved = 99; pinch = 1;
+        if (d0 > 0) zoomAt((p.x + other.x) / 2, (p.y + other.y) / 2, d1 / d0);
+      }
+    });
+    const up = (e) => { ptrs.delete(e.pointerId); if (!ptrs.size) setTimeout(() => { pinch = 0; }, 50); };
+    cvs.addEventListener('pointerup', up); cvs.addEventListener('pointercancel', up);
+    cvs.addEventListener('wheel', (e) => { e.preventDefault(); const p = pos(e); zoomAt(p.x, p.y, e.deltaY < 0 ? 1.25 : 0.8); }, { passive: false });
+    if ($('bm-zin')) { $('bm-zin').addEventListener('click', () => zoomBtn(1.6)); $('bm-zout').addEventListener('click', () => zoomBtn(1 / 1.6)); }
     $('bm-canvas').addEventListener('click', (e) => {
+      if (moved > 6 || pinch) { moved = 0; return; } // that was a drag or a pinch, not a tap
       const r = $('bm-canvas').getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
       const hit = bigHits.find(h => Math.hypot(h.x - x, h.y - y) <= h.r);
       if (hit) pick(hit.id); else travelTo(x, y);
