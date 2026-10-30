@@ -320,7 +320,17 @@ LQ.Map = (function () {
     for (let x = 0; x < W; x++) for (const y of [0, H - 1]) { const i = idx(x, y); if (kind[i] === 0 || kind[i] === 5) { objects[i] = T.TREE; walk[i] = 0; } }
     for (let y = 0; y < H; y++) for (const x of [0, W - 1]) { const i = idx(x, y); if (kind[i] === 0 || kind[i] === 5) { objects[i] = T.PINE; walk[i] = 0; } if (kind[i] === 1) { walk[i] = 0; } }
 
-    const names = waterNames.map(w => ({ name: w.name, tile: kmToTile(w.km[0], w.km[1]) }));
+    // Water names sit on the nearest water (30 Oct 2026): with the real map the
+    // water is not always exactly at the old spot. No water nearby = no label.
+    const names = waterNames.map(w => {
+      const t = kmToTile(w.km[0], w.km[1]);
+      let best = null, bd = 1e9;
+      for (let y = Math.max(0, t.y - 14); y <= Math.min(H - 1, t.y + 14); y++) for (let x = Math.max(0, t.x - 14); x <= Math.min(W - 1, t.x + 14); x++) {
+        if (kind[idx(x, y)] !== 2) continue;
+        const d = (x - t.x) ** 2 + (y - t.y) ** 2; if (d < bd) { bd = d; best = { x, y }; }
+      }
+      return best ? { name: w.name, tile: best } : null;
+    }).filter(Boolean);
     return { W, H, ground, objects, walk, kind, bike, home, board, kit, podium, buildings, landmarks, routes, names, kmToTile, KM_PER_TILE, T };
   }
 
