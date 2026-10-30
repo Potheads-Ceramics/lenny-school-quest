@@ -483,9 +483,15 @@ LQ.Extras = (function () {
     if (!scene.anims.exists(key + '-run')) scene.anims.create({ key: key + '-run', frames: [0, 1, 2, 3].map(n => ({ key: key + '-walk', frame: n })), frameRate: 13, repeat: -1 });
   }
   // spr.texture key 'kit' (sitting) or e.g. 'fifi'; walking uses '<key>-walk'
+  // moving: walk (or run); 'stand': stand still, side view; false: sit, facing you
   function catAnim(scene, spr, moving, fast) {
     const base = spr.catKey || (spr.catKey = spr.texture.key);
     catAnims(scene, base, spr.catPal);
+    if (moving === 'stand') {
+      if (spr.anims.isPlaying) spr.anims.stop();
+      if (spr.texture.key !== base + '-walk' || spr.frame.name !== 1) spr.setTexture(base + '-walk', 1);
+      return;
+    }
     const want = moving ? base + (fast ? '-run' : '-walk') : base + '-idle';
     if (spr.anims.currentAnim && spr.anims.currentAnim.key === want) return;
     if (want.endsWith('-idle') && !scene.anims.exists(want)) { spr.anims.stop(); spr.setTexture(base, 0); return; }
@@ -552,7 +558,13 @@ LQ.Extras = (function () {
       const k = ref, dx = goal.x - k.spr.x, dy = goal.y - k.spr.y, d = Math.hypot(dx, dy);
       if (d > 260) { k.spr.setPosition(goal.x, goal.y); syncCat(k); return; }
       const sp = (G().state.mode === 'bike' ? 140 : 75) * Math.min(delta, 50) / 1000 * (d > 40 ? 1.4 : 1);
-      catAnim(scene, k.spr, d > 1.5, G().state.mode === 'bike' || d > 40);
+      // No flicker: while Lenny moves, the cat keeps walking. When he stops, the
+      // cat stands still (side view) and only sits down after a moment.
+      const now = scene.time.now;
+      if (pl.moving || d > 3) k.lastMove = now;
+      const still = now - (k.lastMove || 0);
+      catAnim(scene, k.spr, still < 150 ? true : still < 1800 ? 'stand' : false, G().state.mode === 'bike' || d > 40);
+      if (still >= 1800 && !k.satFront) { k.spr.setFlipX(false); k.satFront = true; } else if (still < 1800) k.satFront = false;
       if (d > 1) { k.spr.x += dx / d * Math.min(sp, d); k.spr.y += dy / d * Math.min(sp, d); if (Math.abs(dx) > 0.5) k.spr.setFlipX(dx > 0); }
       syncCat(k);
     });
