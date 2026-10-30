@@ -399,6 +399,17 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
 .bubble.mami-cheer { background: #fff3f6; animation: pop .35s ease-out; }
 .bubble.mami-cheer .who { background: #e8475f; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .bubble.fam-say .who { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+/* ---------- karaoke with Lucia (extras.js) ---------- */
+.kara-screen { background: #1e1e2a; border: 4px solid #7b4fd6; box-shadow: inset 0 0 0 2px #2b2b3a; padding: 12px 10px; max-height: 210px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; text-align: center; }
+.kara-line { margin: 0; font-family: var(--display); font-size: 19px; color: #8f8aa8; transition: opacity .3s, font-size .2s; }
+.kara-line.cur { font-size: 23px; color: #fff; }
+.kara-line.later, .kara-line.done { opacity: .45; }
+.kara-line span { transition: color .15s; }
+.kara-line span.sung { color: #ff5fa2; }
+.kara-line span.now { color: #ffd23f; text-shadow: 0 0 6px rgba(255,210,63,.7); }
+.kara-mic { display: flex; align-items: center; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.kara-meter { display: block; width: min(160px, 40vw); height: 12px; background: var(--parch-2); border: 2px solid var(--wood-dark); }
+.kara-meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #5fd3ff, #ff5fa2); transition: width .08s; }
 .mami-face { width: 40px; height: 28px; image-rendering: pixelated; background: #fff3f6; border: 2px solid var(--ink); }
 /* ---------- the cube (extras.js) ---------- */
 #cube { position: fixed; z-index: 9; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(var(--hud-h, 76px) + 8px); display: flex; flex-direction: column; align-items: center; gap: 1px;
@@ -489,23 +500,23 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.70.0/phaser.min.js"></script>
-<script src="sprites.js?v=20261030-12"></script>
-<script src="map.js?v=20261030-12"></script>
-<script src="scoring.js?v=20261030-12"></script>
-<script src="music.js?v=20261030-12"></script>
-<script src="ui.js?v=20261030-12"></script>
-<script src="challenges.js?v=20261030-12"></script>
-<script src="coins.js?v=20261030-12"></script>
-<script src="player.js?v=20261030-12"></script>
-<script src="schools.js?v=20261030-12"></script>
-<script src="schoolgames.js?v=20261030-12"></script>
-<script src="interior.js?v=20261030-12"></script>
-<script src="extras.js?v=20261030-12"></script>
-<script src="words.js?v=20261030-12"></script>
-<script src="minimap.js?v=20261030-12"></script>
-<script src="joystick.js?v=20261030-12"></script>
-<script src="cloud-config.js?v=20261030-12"></script>
-<script src="cloud.js?v=20261030-12"></script>
-<script src="main.js?v=20261030-12"></script>
+<script src="sprites.js?v=20261030-13"></script>
+<script src="map.js?v=20261030-13"></script>
+<script src="scoring.js?v=20261030-13"></script>
+<script src="music.js?v=20261030-13"></script>
+<script src="ui.js?v=20261030-13"></script>
+<script src="challenges.js?v=20261030-13"></script>
+<script src="coins.js?v=20261030-13"></script>
+<script src="player.js?v=20261030-13"></script>
+<script src="schools.js?v=20261030-13"></script>
+<script src="schoolgames.js?v=20261030-13"></script>
+<script src="interior.js?v=20261030-13"></script>
+<script src="extras.js?v=20261030-13"></script>
+<script src="words.js?v=20261030-13"></script>
+<script src="minimap.js?v=20261030-13"></script>
+<script src="joystick.js?v=20261030-13"></script>
+<script src="cloud-config.js?v=20261030-13"></script>
+<script src="cloud.js?v=20261030-13"></script>
+<script src="main.js?v=20261030-13"></script>
 
 </body></html>

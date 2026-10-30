@@ -54,6 +54,8 @@ LQ.Schools = (function () {
     targets.push(kitT);
     // Kit can walk along with Lenny (extras.js moves her; she keeps her home spot)
     LQ.Schools.kitRef = { spr: kitSpr, target: kitT, home: { x: kitSpr.x, y: kitSpr.y } };
+    // Lucia and her karaoke machine next to the house (extras.js)
+    if (LQ.Extras && LQ.Extras.addHome) (LQ.Extras.addHome(scene, map) || []).forEach(t => targets.push(t));
 
     // schools
     const byId = Object.fromEntries(data.schools.map(s => [s.id, s]));

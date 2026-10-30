@@ -814,6 +814,27 @@ LQ.Sprites = (function () {
     return sheet.c;
   }
 
+  /* Lucia's karaoke machine (20x24, 2 frames: the lights blink): a speaker
+     box on little wheels with a screen, and a microphone on a stand. */
+  function karaoke() {
+    const sheet = canvas(40, 24);
+    for (let f = 0; f < 2; f++) {
+      const cell = canvas(20, 24), r = painter(cell.ctx, 0, 0);
+      // mic stand
+      r(16, 6, 1, 15, '#3b3b44'); r(14, 21, 5, 1, '#3b3b44'); r(15, 3, 3, 4, '#2b2b30'); r(15, 3, 3, 1, '#9aa0a8');
+      // speaker box
+      r(2, 9, 12, 13, '#7b4fd6'); r(2, 9, 12, 1, '#a07cf0'); r(2, 21, 12, 1, '#5a36a8');
+      r(3, 10, 10, 4, '#1e1e2a'); // screen
+      const lit = f ? ['#ff5fa2', '#ffd23f', '#5fd3ff'] : ['#5fd3ff', '#ff5fa2', '#ffd23f'];
+      r(4, 11, 2, 2, lit[0]); r(7, 11, 2, 2, lit[1]); r(10, 11, 2, 2, lit[2]);
+      r(5, 15, 6, 5, '#2b2b30'); r(6, 16, 4, 3, f ? '#4a4a55' : '#3b3b44'); r(7, 17, 2, 1, '#9aa0a8'); // speaker cone
+      r(3, 22, 2, 2, '#2b2b30'); r(11, 22, 2, 2, '#2b2b30');
+      outline(cell.ctx, 20, 24, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 20, 0);
+    }
+    return sheet.c;
+  }
+
   /* Speech bubbles above people: "!" = challenge waiting, tick = done. */
   function bubble(kind) {
     const k = canvas(13, 14), r = painter(k.ctx, 1, 1);
@@ -825,5 +846,5 @@ LQ.Sprites = (function () {
     return k.c;
   }
 
-  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, jiskaSheet, chopBlock, luciaSheet, bubble, TILE, colors: C };
+  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, jiskaSheet, chopBlock, luciaSheet, karaoke, bubble, TILE, colors: C };
 })();

@@ -95,6 +95,21 @@ LQ.Music = (function () {
       bass: { wave: 'square', vol: 0.05, pattern: '.o.o.o.o' },
       drums: { kick: 'x.x.x.x.', clap: '..x...x.', hat: '.x.x.x.x' }
     },
+    // Lucia's dance music (30 Oct 2026): disco/dance-pop, four on the floor.
+    // Not on the radio; it plays while Lenny dances or sings karaoke with Lucia.
+    disco: {
+      title: 'Lucia Disco', icon: '🪩', blurb: 'Dansen met Lucia', special: true,
+      bpm: 120, res: 8, volume: 0.85,
+      chords: ['C3', 'A2m', 'F2', 'G2', 'C3', 'A2m', 'F2', 'G2'],
+      lead: { wave: 'square', vol: 0.045 },
+      parts: [
+        ['E5 - E5 - G5 - E5 -', 'C5 - D5 - E5 - . .', 'F5 - F5 - A5 - F5 -', 'D5 - E5 - G5 - . .',
+         'E5 - G5 - C6 - B5 -', 'A5 - G5 - E5 - . .', 'F5 - E5 - D5 - C5 -', 'D5 - - - G4 - . .']
+      ],
+      bass: { wave: 'square', vol: 0.06, pattern: 'xoxoxoxo' },
+      arp: { wave: 'triangle', vol: 0.03 },
+      drums: { kick: 'x.x.x.x.', clap: '..x...x.', hat: '.x.x.x.x' }
+    },
     school: {
       title: 'Rustige School', icon: '🎐', blurb: 'Muziekdoosje', inside: true,
       bpm: 80, res: 8, volume: 0.9,
@@ -254,12 +269,15 @@ LQ.Music = (function () {
     setTimeout(() => { try { p.bus.disconnect(); } catch (e) {} }, 900);
   }
 
+  // A song that plays instead of the station for a while (Lucia's disco).
+  let over = null;
+  function override(name) { over = name && SONGS[name] ? name : null; sync(); }
   function station() { const s = LQ.Game && LQ.Game.state.station; return STATIONS.includes(s) ? s : 'lofi'; }
 
   /* Called by the HUD whenever something changes (sound button, radio, enter/leave a school). */
   function sync() {
     const G = LQ.Game; if (!G || !G.state) return;
-    const want = G.state.sound ? (G.inside ? 'school' : station()) : null;
+    const want = G.state.sound ? (G.inside ? 'school' : (over || station())) : null;
     if ((cur ? cur.name : null) === want) return;
     try {
       stop();
@@ -277,5 +295,5 @@ LQ.Music = (function () {
     else if (cur) ac.resume().catch(() => {});
   });
 
-  return { sync, SONGS, STATIONS, station, playing: () => cur && cur.name };
+  return { sync, override, SONGS, STATIONS, station, playing: () => cur && cur.name };
 })();
