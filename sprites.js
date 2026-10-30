@@ -275,6 +275,20 @@ LQ.Sprites = (function () {
       const q = at(26); q(0, 0, 16, 16, '#c25a45');
       for (let x = 1; x < 16; x += 5) { q(x, 1, 3, 3, '#f4efe4'); q(x, 12, 3, 3, '#f4efe4'); }
     }
+    { // 27: small street (grey stones), 28-30: rows of houses seen from above (roofs), for the real city map
+      const R = rng(27), r = at(27); r(0, 0, 16, 16, '#c9c2b4');
+      for (let y = 0; y < 16; y += 4) for (let x = (y / 4) % 2 ? 0 : 2; x < 16; x += 4) r(x, y, 3, 3, '#bdb5a6');
+      for (let k = 0; k < 6; k++) r(Math.floor(R() * 16), Math.floor(R() * 16), 1, 1, '#d6d0c4');
+      const roof = (i, col, dark, light) => {
+        const q = at(i); q(0, 0, 16, 16, col);
+        q(0, 7, 16, 2, dark); q(0, 0, 16, 1, light); q(0, 15, 16, 1, '#5e4636');
+        for (let x = 3; x < 16; x += 8) { q(x, 2, 3, 3, '#7a5530'); q(x, 3, 3, 1, '#9b7148'); }
+        q(0, 0, 1, 16, dark);
+      };
+      roof(28, '#b5523c', '#8e3d2c', '#cf6a52');
+      roof(29, '#6f7f8f', '#55636f', '#8898a8');
+      roof(30, '#a8743f', '#7d522a', '#c08a52');
+    }
     // outline trees/bushes/etc
     for (const i of [8, 9, 10, 13, 14, 24]) {
       const cell = canvas(16, 16);

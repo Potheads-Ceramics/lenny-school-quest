@@ -167,6 +167,8 @@ window.LQ = window.LQ || {};
     try {
       const res = await fetch('schools.json', { cache: 'no-cache' });
       Game.data = await res.json();
+      // real streets (OpenStreetMap); the game still works without them
+      try { const st = await fetch('streets.txt', { cache: 'no-cache' }); if (st.ok) Game.data.streets = await st.text(); } catch (e) {}
     } catch (e) {
       document.getElementById('loading').textContent = 'De lijst met scholen kon niet laden (schools.json). Laad de pagina opnieuw.';
       return;

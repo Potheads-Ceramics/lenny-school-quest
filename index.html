@@ -306,6 +306,8 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
 .bm-side { display: flex; flex-direction: column; min-height: 0; border-left: 4px solid var(--wood-dark); }
 .bm-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 8px 10px; font-size: 13px; background: var(--parch-2); }
 .bm-legend span { white-space: nowrap; }
+.bm-legend .osm { font-size: 11px; color: var(--ink-soft); }
+.bm-legend .osm a { color: inherit; }
 #bm-list { list-style: none; margin: 0; padding: 6px; overflow-y: auto; display: grid; gap: 6px; align-content: start; }
 .bm-row { display: flex; flex-direction: column; gap: 6px; padding: 6px; background: #fffdf5; border: 2px solid var(--parch-2); }
 .bm-row.on { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
@@ -419,7 +421,7 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
     <div class="bm-body">
       <div class="bm-mapwrap"><canvas id="bm-canvas" aria-label="Kaart van thuis en de scholen"></canvas></div>
       <div class="bm-side">
-        <div class="bm-legend"><span>🔵 Hier ben jij</span><span>❔ Nog niet bezocht</span><span>🎨 Bezocht</span><span>⭐ Alles klaar</span><span><b style="color:#c25a45">▬</b> Fietsroute</span></div>
+        <div class="bm-legend"><span>🔵 Hier ben jij</span><span>❔ Nog niet bezocht</span><span>🎨 Bezocht</span><span>⭐ Alles klaar</span><span><b style="color:#c25a45">▬</b> Fietsroute</span><span class="osm">Kaart: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bijdragers</span></div>
         <ul id="bm-list"></ul>
       </div>
     </div>

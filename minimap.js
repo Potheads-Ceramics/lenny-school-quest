@@ -18,7 +18,7 @@ LQ.Minimap = (function () {
   const TS = 16;
   const SIZES = { normal: 168, small: 104 };
   const COL = {
-    grass: '#7cbf5a', park: '#5e9f45', road: '#e9dcc0', bike: '#d0503a', bridge: '#b98a55', water: '#4f9fd6',
+    grass: '#7cbf5a', park: '#5e9f45', road: '#f3e6c4', street: '#d6d0c4', roof: '#c0806a', bike: '#d0503a', bridge: '#b98a55', water: '#4f9fd6',
     house: '#9fcf7c', home: '#d3192c', grey: '#9a948a', ink: '#2b1d16', gold: '#f5c518', lenny: '#2f6fd6'
   };
 
@@ -52,9 +52,9 @@ LQ.Minimap = (function () {
       if (k === 2) c3 = P.water;
       else if (k === 4) c3 = P.bridge;
       else if (map.bike && map.bike[i]) c3 = P.bike; // the family bike routes
-      else if (k === 1) c3 = P.road;
+      else if (k === 1) c3 = map.ground[i] === T.STREET ? P.street : P.road;
       else if (o === T.TREE || o === T.PINE || o === T.BUSH) c3 = P.park;
-      else if (o >= T.HOUSE_A && o <= T.HOUSE_B + 3) c3 = P.house;
+      else if ((o >= T.HOUSE_A && o <= T.HOUSE_B + 3) || (T.ROW_A && o >= T.ROW_A && o <= T.ROW_C)) c3 = P.roof;
       img.data.set([c3[0], c3[1], c3[2], 255], i * 4);
     }
     g.putImageData(img, 0, 0);

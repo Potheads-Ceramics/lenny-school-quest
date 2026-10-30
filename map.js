@@ -5,6 +5,10 @@
    The map is a friendly cartoon: lakes, river and roads are rough.
    The two family bike routes (data.bikeRoutes) are drawn as red
    fietspad, and the family landmarks (data.landmarks) sit along them.
+   30 Oct 2026: when data/streets.txt is there, the streets, cycleways,
+   canals, lakes, parks and bridges come from OpenStreetMap (© OSM
+   contributors, ODbL), drawn on the same 30 m grid. Without that file
+   the old cartoon map is used.
    ===================================================================== */
 window.LQ = window.LQ || {};
 
@@ -12,7 +16,7 @@ LQ.Map = (function () {
   const KM_PER_TILE = 0.03; // 29 Oct 2026: 30 m per tile (was 45, before that 65) so buildings, parks and distances keep real proportions
   const BOUNDS = { x0: -2.4, x1: 7.0, y0: -2.9, y1: 4.9 }; // km, x east, y south of home
   const T = { GRASS: 0, GRASS2: 1, TUFT: 2, ROAD: 3, WATER: 4, BRIDGE: 5, PLAZA: 6, WATER2: 7,
-              TREE: 8, PINE: 9, BUSH: 10, FLOW_R: 11, FLOW_Y: 12, FENCE: 13, LAMP: 14, REEDS: 15, HOUSE_A: 16, HOUSE_B: 20, BIKE: 25, BIKE_CROSS: 26 };
+              TREE: 8, PINE: 9, BUSH: 10, FLOW_R: 11, FLOW_Y: 12, FENCE: 13, LAMP: 14, REEDS: 15, HOUSE_A: 16, HOUSE_B: 20, BIKE: 25, BIKE_CROSS: 26, STREET: 27, ROW_A: 28, ROW_B: 29, ROW_C: 30 };
 
   function rng(seed) { let s = seed >>> 0 || 1; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
 
@@ -37,6 +41,13 @@ LQ.Map = (function () {
 
     for (let i = 0; i < N; i++) { const v = R(); ground[i] = v < 0.08 ? T.TUFT : v < 0.35 ? T.GRASS2 : T.GRASS; }
 
+    /* ---- real streets from OpenStreetMap (data.streets, see main.js) ----
+       one char per tile class: 0 grass 1 street 2 main road 3 cycleway 4 water 5 park 6 bridge */
+    const grid = parseStreets(data.streets, W, H);
+    const real = !!grid;
+    if (grid) simplify(grid, W, H);
+    const major = new Uint8Array(N); // 1 = main road (buildings never cover these)
+
     /* ---- water ---- */
     function setWater(x, y) { if (!inb(x, y)) return; const i = idx(x, y); kind[i] = 2; walk[i] = 0; ground[i] = ((x + y) % 5 === 0) ? T.WATER2 : T.WATER; }
     function ellipse(kx, ky, rx, ry) {
@@ -57,6 +68,10 @@ LQ.Map = (function () {
       }
     }
     const waterNames = [];
+    if (real) {
+      for (let i = 0; i < N; i++) { const c = grid[i]; if (c === 4) setWater(i % W, (i / W) | 0); else if (c === 5) park[i] = 1; }
+      [['Bergse Plassen', 1.55, -1.0], ['Kralingse Plas', 3.15, 0.95], ['Rotte', 2.45, -0.3], ['De Maas', 1.6, 4.55]].forEach(([name, kx, ky]) => waterNames.push({ name, km: [kx, ky] }));
+    } else {
     ellipse(1.45, -1.05, 0.25, 0.3); ellipse(1.72, -1.48, 0.24, 0.3); waterNames.push({ name: 'Bergse Plassen', km: [1.6, -1.35] });
     ellipse(3.1, 1.35, 0.5, 0.4); waterNames.push({ name: 'Kralingse Plas', km: [3.1, 1.35] });
     river([[2.6, -2.3], [2.45, -0.8], [2.25, 0.5], [2.05, 1.45]], 1); waterNames.push({ name: 'Rotte', km: [2.45, -0.4] });
@@ -67,6 +82,14 @@ LQ.Map = (function () {
     }
     waterNames.push({ name: 'De Maas', km: [1.5, 4.78] });
     ellipse(-1.45, 1.52, 0.09, 0.06); // pond in the Vroesenpark
+    }
+    if (real) { // streets, cycleways and bridges (before home and the family routes, which draw on top)
+      for (let i = 0; i < N; i++) {
+        const c = grid[i]; if (!c || c === 4 || c === 5) continue;
+        if (c === 6) { kind[i] = 4; ground[i] = T.BRIDGE; walk[i] = 1; continue; }
+        kind[i] = 1; walk[i] = 1; ground[i] = c === 3 ? T.BIKE : T.ROAD; if (c === 2) major[i] = 1; // cycleways red, like the family routes
+      }
+    }
 
     /* ---- reserve home + landmarks ---- */
     const reserved = (x0, y0, x1, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (inb(x, y)) { const i = idx(x, y); kind[i] = 3; walk[i] = 0; } };
@@ -130,6 +153,7 @@ LQ.Map = (function () {
     const maasTop = kmToTile(0, 4.52).y;
     function hRoad(ky, kxa, kxb) { const a = kmToTile(kxa, ky), b = kmToTile(kxb, ky); for (let x = Math.max(0, a.x); x <= Math.min(W - 1, b.x); x++) { paintRoad(x, a.y); paintRoad(x, a.y + 1); } }
     function vRoad(kx, kya, kyb) { const a = kmToTile(kx, kya), b = kmToTile(kx, kyb); for (let y = Math.max(0, a.y); y <= Math.min(maasTop, b.y); y++) { paintRoad(a.x, y); paintRoad(a.x + 1, y); } }
+    if (!real) {
     // the street goes right past the front door
     for (let x = 0; x < W; x++) { paintRoad(x, homeDoor.y + 1); paintRoad(x, homeDoor.y + 2); }
     hRoad(1.9, BOUNDS.x0, BOUNDS.x1);
@@ -138,15 +162,18 @@ LQ.Map = (function () {
     vRoad(-0.15, BOUNDS.y0, 4.2);
     vRoad(4.0, 0.0, 2.0);
     vRoad(1.75, -0.95, 0.1); // (moved east 27 Oct so Wolfert Dalton fits in its real spot)
+    }
 
     /* ---- place school buildings near their real spot ---- */
     const BW = 5; // footprint 5 wide x 4 tall (rows door-4..door-1)
-    function free(cx, cy) {
-      for (let y = cy - 5; y <= cy + 1; y++) for (let x = cx - 3; x <= cx + 3; x++) {
+    // Is there room for a school with its door at (cx, cy)? Only the building itself and its door count.
+    // In the real map it may stand on small streets; main roads only when nothing else fits nearby.
+    function free(cx, cy, allowMajor) {
+      for (let y = cy - 4; y <= cy; y++) for (let x = cx - 2; x <= cx + 2; x++) {
         if (!inb(x, y)) return false;
-        const k = kind[idx(x, y)];
-        if (k === 3 || k === 2 || k === 4) return false;
-        if (k === 1 && y < cy) return false; // roads only in the door row or below
+        const i = idx(x, y), k = kind[i];
+        if (k === 3 || k === 2 || k === 4 || bike[i]) return false;
+        if (k === 1 && y < cy && (!real || (major[i] && !allowMajor))) return false;
       }
       return true;
     }
@@ -156,14 +183,17 @@ LQ.Map = (function () {
       const km = geoToKm(data.home, s.lat, s.lon);
       const t = kmToTile(km.x, km.y); t.y += 2; // the door sits below the middle of the building
       let spot = null;
-      for (let rad = 0; rad < 18 && !spot; rad++) {
-        let best = null, bestD = 1e9;
-        for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== rad) continue;
-          const cx = t.x + dx, cy = t.y + dy;
-          if (free(cx, cy)) { const d = dx * dx + dy * dy; if (d < bestD) { bestD = d; best = { x: cx, y: cy }; } }
+      for (const allowMajor of [false, true]) {
+        for (let rad = 0; rad < (allowMajor ? 18 : 5) && !spot; rad++) {
+          let best = null, bestD = 1e9;
+          for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== rad) continue;
+            const cx = t.x + dx, cy = t.y + dy;
+            if (free(cx, cy, allowMajor)) { const d = dx * dx + dy * dy; if (d < bestD) { bestD = d; best = { x: cx, y: cy }; } }
+          }
+          spot = best;
         }
-        spot = best;
+        if (spot) break;
       }
       if (!spot) { console.warn('No spot for', s.id); continue; }
       const b = { id: s.id, x0: spot.x - 2, x1: spot.x + 2, y0: spot.y - 4, y1: spot.y - 1, door: { x: spot.x, y: spot.y }, km };
@@ -176,13 +206,13 @@ LQ.Map = (function () {
 
     /* ---- family landmarks along the routes (houses, park, zoo, ...) ---- */
     const LSIZE = { family: [3, 3], shed: [2, 2], playground: [4, 3], zoo: [4, 3], park: [1, 1], streetsign: [1, 1], primary: [4, 3], football: [4, 3] };
-    function freeBox(cx, cy, w, h) {
-      const xa = cx - Math.floor(w / 2) - 1, xb = xa + w + 1;
-      for (let y = cy - h - 1; y <= cy + 1; y++) for (let x = xa; x <= xb; x++) {
+    function freeBox(cx, cy, w, h, allowMajor) {
+      const xa = cx - Math.floor(w / 2);
+      for (let y = cy - h; y <= cy; y++) for (let x = xa; x < xa + w; x++) {
         if (!inb(x, y)) return false;
-        const k = kind[idx(x, y)];
-        if (k === 3 || k === 2 || k === 4) return false;
-        if (k === 1 && y < cy) return false;
+        const i = idx(x, y), k = kind[i];
+        if (k === 3 || k === 2 || k === 4 || bike[i]) return false;
+        if (k === 1 && y < cy && (!real || (major[i] && !allowMajor))) return false;
       }
       return true;
     }
@@ -191,13 +221,16 @@ LQ.Map = (function () {
       const sz = LSIZE[l.kind]; if (!sz) return; // the roundabout is painted above
       const t = geoTile([l.lat, l.lon]); t.y += Math.ceil(sz[1] / 2); // door below the middle
       let spot = null;
-      for (let rad = 0; rad < 14 && !spot; rad++) {
-        let best = null, bestD = 1e9;
-        for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== rad) continue;
-          if (freeBox(t.x + dx, t.y + dy, sz[0], sz[1])) { const d = dx * dx + dy * dy; if (d < bestD) { bestD = d; best = { x: t.x + dx, y: t.y + dy }; } }
+      for (const allowMajor of [false, true]) {
+        for (let rad = 0; rad < (allowMajor ? 14 : 5) && !spot; rad++) {
+          let best = null, bestD = 1e9;
+          for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== rad) continue;
+            if (freeBox(t.x + dx, t.y + dy, sz[0], sz[1], allowMajor)) { const d = dx * dx + dy * dy; if (d < bestD) { bestD = d; best = { x: t.x + dx, y: t.y + dy }; } }
+          }
+          spot = best;
         }
-        spot = best;
+        if (spot) break;
       }
       if (!spot) { console.warn('No spot for landmark', l.id); return; }
       const x0 = spot.x - Math.floor(sz[0] / 2), lm = { id: l.id, kind: l.kind, x0, x1: x0 + sz[0] - 1, y0: spot.y - sz[1], y1: spot.y - 1, door: { x: spot.x, y: spot.y } };
@@ -209,6 +242,19 @@ LQ.Map = (function () {
     if (roundabout && LM.rotonde) landmarks.push({ id: 'rotonde', kind: 'roundabout', x0: roundabout.x - 1, x1: roundabout.x + 1, y0: roundabout.y - 1, y1: roundabout.y + 1, door: { x: roundabout.x, y: roundabout.y + 2 } });
 
     /* ---- connect every door to the road network (cheapest path, bridges over water) ---- */
+    // the main street network = the biggest group of connected streets/bridges; every door joins it
+    const mainNet = new Uint8Array(N);
+    {
+      const comp = new Int32Array(N).fill(-1); let best = -1, bestSize = 0, id = 0; const st = [];
+      for (let s0 = 0; s0 < N; s0++) {
+        if (comp[s0] !== -1 || !(kind[s0] === 1 || kind[s0] === 4) || !walk[s0]) continue;
+        let size = 0; comp[s0] = id; st.push(s0);
+        while (st.length) { const i = st.pop(); size++; const x = i % W, y = (i / W) | 0;
+          for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (!inb(nx, ny)) continue; const j = idx(nx, ny); if (comp[j] === -1 && (kind[j] === 1 || kind[j] === 4) && walk[j]) { comp[j] = id; st.push(j); } } }
+        if (size > bestSize) { bestSize = size; best = id; } id++;
+      }
+      for (let i = 0; i < N; i++) if (comp[i] === best) mainNet[i] = 1;
+    }
     function connect(sx, sy) {
       const dist = new Float32Array(N).fill(1e9), prev = new Int32Array(N).fill(-1);
       const heap = [];
@@ -219,7 +265,7 @@ LQ.Map = (function () {
       while (heap.length) {
         const [d, i] = pop(); if (d > dist[i]) continue;
         const x = i % W, y = (i / W) | 0;
-        if (i !== s && (kind[i] === 1 || kind[i] === 4)) { goal = i; break; }
+        if (i !== s && mainNet[i]) { goal = i; break; }
         for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
           const nx = x + dx, ny = y + dy; if (!inb(nx, ny)) continue;
           const j = idx(nx, ny), k = kind[j];
@@ -229,8 +275,8 @@ LQ.Map = (function () {
           if (d + c < dist[j]) { dist[j] = d + c; prev[j] = i; push(j, d + c); }
         }
       }
-      for (let i = goal; i !== -1 && i !== s; i = prev[i]) { const x = i % W, y = (i / W) | 0; paintRoad(x, y); }
-      paintRoad(sx, sy);
+      for (let i = goal; i !== -1 && i !== s; i = prev[i]) { const x = i % W, y = (i / W) | 0; paintRoad(x, y); mainNet[i] = 1; }
+      paintRoad(sx, sy); mainNet[idx(sx, sy)] = 1;
     }
     const doorRow = (d) => ({ x: d.x, y: d.y + 1 });
     connect(doorRow(home.door).x, doorRow(home.door).y);
@@ -242,10 +288,18 @@ LQ.Map = (function () {
     const nearRoad = (x, y) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const nx = x + dx, ny = y + dy; if (inb(nx, ny)) { const k = kind[idx(nx, ny)]; if (k === 1 || k === 4 || k === 3) return true; } } return false; };
     const nearWater = (x, y, r) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const nx = x + dx, ny = y + dy; if (inb(nx, ny) && kind[idx(nx, ny)] === 2) return true; } return false; };
     const canUse = (x, y) => inb(x, y) && kind[idx(x, y)] === 0 && objects[idx(x, y)] === -1 && !nearRoad(x, y) && !(Math.abs(x - kit.x) < 2 && Math.abs(y - kit.y) < 2);
+    // a city block = grass with a street close by: fill it with rows of houses (roofs seen from above)
+    const streetNear = (x, y) => { for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const nx = x + dx, ny = y + dy; if (inb(nx, ny) && kind[idx(nx, ny)] === 1) return true; } return false; };
+    const nearHome = (x, y) => x >= home.x0 - 4 && x <= podium.x1 + 3 && y >= home.y0 - 3 && y <= home.y1 + 4;
     for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
       if (!canUse(x, y)) continue;
+      if (false && real && !park[idx(x, y)] && !nearWater(x, y, 1) && !nearHome(x, y) && streetNear(x, y) && R() < 0.85) { // rows of roofs: switched off 30 Oct (they blocked the way)
+        const i = idx(x, y), h = ((y * 73856093) ^ (Math.floor(x / 5) * 19349663)) >>> 0;
+        objects[i] = [T.ROW_A, T.ROW_A, T.ROW_B, T.ROW_C][h % 4]; walk[i] = 0; kind[i] = 5;
+        continue;
+      }
       const kx = BOUNDS.x0 + x * KM_PER_TILE, ky = BOUNDS.y0 + y * KM_PER_TILE;
-      const city = ky > 0.4 && kx < 2.0;
+      const city = real ? !park[idx(x, y)] : (ky > 0.4 && kx < 2.0);
       const inPark = park[idx(x, y)] === 1;
       const lakeside = nearWater(x, y, 4) && ky < 4.0;
       const v = R();
@@ -268,6 +322,49 @@ LQ.Map = (function () {
 
     const names = waterNames.map(w => ({ name: w.name, tile: kmToTile(w.km[0], w.km[1]) }));
     return { W, H, ground, objects, walk, kind, bike, home, board, kit, podium, buildings, landmarks, routes, names, kmToTile, KM_PER_TILE, T };
+  }
+
+  // The mix (30 Oct 2026): the real main roads, cycleways, canals, lakes and parks, but not every
+  // small street and not every ditch, so the map stays green and open like before.
+  function simplify(g, W, H) {
+    for (let i = 0; i < g.length; i++) if (g[i] === 1) g[i] = 0; // small streets -> grass
+    // water: drop small bits (ditches, ponds) of fewer than 25 tiles
+    const seen = new Uint8Array(g.length), stack = [];
+    for (let s = 0; s < g.length; s++) {
+      if (g[s] !== 4 || seen[s]) continue;
+      const part = []; stack.push(s); seen[s] = 1;
+      while (stack.length) { const i = stack.pop(); part.push(i); const x = i % W, y = (i / W) | 0;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny * W + nx; if (g[j] === 4 && !seen[j]) { seen[j] = 1; stack.push(j); } } }
+      if (part.length < 25) part.forEach(i => { g[i] = 0; });
+    }
+    // tiny bits of cycleway (fewer than 4 tiles): part of the road next to them, or grass if alone
+    const seenC = new Uint8Array(g.length);
+    for (let s = 0; s < g.length; s++) {
+      if (g[s] !== 3 || seenC[s]) continue;
+      const part = []; stack.push(s); seenC[s] = 1;
+      while (stack.length) { const i = stack.pop(); part.push(i); const x = i % W, y = (i / W) | 0;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny * W + nx; if (g[j] === 3 && !seenC[j]) { seenC[j] = 1; stack.push(j); } } }
+      if (part.length >= 4) continue;
+      const nextToRoad = part.some(i => { const x = i % W, y = (i / W) | 0; return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const nx = x + dx, ny = y + dy; return nx >= 0 && ny >= 0 && nx < W && ny < H && (g[ny * W + nx] === 2 || g[ny * W + nx] === 6); }); });
+      part.forEach(i => { g[i] = nextToRoad ? 2 : 0; });
+    }
+    // bridges that no longer cross water or touch a road: back to grass
+    for (let i = 0; i < g.length; i++) if (g[i] === 6) {
+      const x = i % W, y = (i / W) | 0; let ok = false;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < W && ny < H) { const c = g[ny * W + nx]; if (c === 4 || c === 6) ok = true; } }
+      if (!ok) g[i] = 0;
+    }
+  }
+
+  // data.streets = the text of data/streets.txt: "W 313 H 260", then one line per row,
+  // runs of "<class><length in base 36>" separated by dots. Returns null if it does not fit this map.
+  function parseStreets(txt, W, H) {
+    if (!txt || typeof txt !== 'string') return null;
+    const lines = txt.trim().split('\n'), head = lines[0].split(' ');
+    if (+head[1] !== W || +head[3] !== H || lines.length - 1 !== H) { console.warn('streets.txt does not match the map size'); return null; }
+    const g = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) { let x = 0; for (const run of lines[y + 1].split('.')) { const c = +run[0], n = parseInt(run.slice(1), 36); g.fill(c, y * W + x, y * W + x + n); x += n; } }
+    return g;
   }
 
   /* ---- A* path finding for tap-to-move ---- */
@@ -298,7 +395,7 @@ LQ.Map = (function () {
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nx = x + dx, ny = y + dy; if (!ok(nx, ny)) continue;
         const j = ny * W + nx; if (closed[j]) continue;
-        const k = kind[j], c = bike && bike[j] ? 0.5 : (k === 1 || k === 4) ? 0.8 : 1.2; // the red fietspad is the nicest way
+        const k = kind[j], c = bike && bike[j] ? 0.5 : map.ground[j] === map.T.BIKE ? 0.6 : (k === 1 || k === 4) ? 0.8 : 3; // the red fietspad is the nicest way; across the grass only when there is no street
         if (g[i] + c < g[j]) { g[j] = g[i] + c; prev[j] = i; push(g[j] + h(nx, ny), j); }
       }
     }

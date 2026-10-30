@@ -19,6 +19,7 @@ Mientras `cloud-config.js` esté vacío, el juego guarda solo en el dispositivo.
 - `index.html`: página y estilos
 - `*.js`: código por partes (mapa, jugador, escuelas, desafíos, puntaje, monedas, mini-mapa, UI). Todo está en la raíz, sin carpetas, para que se pueda subir arrastrando archivos.
 - `cloud.js` + `cloud-config.js`: código de jugador y guardado online
+- `streets.txt`: calles, bicisendas, agua y parques de Rotterdam en la grilla del mapa (30 m por cuadro). Datos © OpenStreetMap-bijdragers (ODbL).
 - `schools.json`: base de datos de escuelas (se puede actualizar sin tocar el código)
 - `supabase-setup.sql`: la base de datos del guardado online
 
