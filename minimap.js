@@ -157,14 +157,22 @@ LQ.Minimap = (function () {
       if (roomy) lmPts.forEach(({ l, p }) => { if (l.kind !== 'roundabout' && l.kind !== 'streetsign') label(LMD[l.id].label, p.x, p.y + r + 2); });
       hits.forEach(h => { const s = byId[h.id]; if (roomy || sel === h.id) label(s.short, h.x, h.y + r + 2, sel === h.id); });
     }
-    // Lenny
+    // where Lenny is travelling to (a spot he tapped on the big map)
     const pl = G.player;
+    if (dest && pl && pl.path) {
+      const p = P(dest.x, dest.y), pr = opts.big ? 7 : 4;
+      g.beginPath(); g.moveTo(p.x, p.y); g.arc(p.x, p.y - pr * 1.6, pr, Math.PI * 0.8, Math.PI * 2.2); g.closePath();
+      g.fillStyle = '#e8475f'; g.fill(); g.strokeStyle = '#fff'; g.lineWidth = opts.big ? 2 : 1; g.stroke();
+      g.beginPath(); g.arc(p.x, p.y - pr * 1.6, pr * 0.4, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill();
+      if (opts.big) label('Hierheen', p.x, p.y - pr * 3.2 - 2, true);
+    } else if (dest && pl && !pl.path) dest = null;
+    // Lenny
     if (pl) {
       const t = pl.tile(), p = P(t.x, t.y);
       lennyIcon(g, p.x, p.y, opts.big ? Math.max(5, r * 0.6) : Math.max(3, r * 0.6), pl.dir);
       if (opts.big) label('Hier ben jij', p.x, p.y - r * 2.6 - 4, true);
     }
-    return { hits };
+    return { hits, xf: { k, ox, oy } };
   }
 
   /* ---------------- the small map ---------------- */
@@ -201,7 +209,7 @@ LQ.Minimap = (function () {
   function openBig() {
     if (open || G.inside || LQ.UI.isOpen()) return;
     open = true;
-    if (G.player) G.player.stop();
+    if (G.player && !dest) G.player.stop(); // a trip picked on the map just waits while the map is open
     $('bigmap').hidden = false;
     $('bm-mode').textContent = G.state.mode === 'bike' ? '🚲 Met de fiets' : '🚶 Lopend';
     list();
@@ -213,8 +221,22 @@ LQ.Minimap = (function () {
     open = false; $('bigmap').hidden = true;
     if (G.activeScene && G.activeScene.input) G.activeScene.input.keyboard.resetKeys();
   }
-  let bigHits = [];
-  function drawBig() { if (!open) return; const res = draw($('bm-canvas'), { big: true }); bigHits = res ? res.hits : []; }
+  let bigHits = [], bigXf = null, dest = null;
+  function drawBig() { if (!open) return; const res = draw($('bm-canvas'), { big: true }); bigHits = res ? res.hits : []; bigXf = res ? res.xf : null; }
+  /* Tap anywhere on the big map: Lenny walks or rides there by himself (30 Oct 2026). */
+  function travelTo(x, y) {
+    if (!bigXf || !G.player) return;
+    const tx = Math.floor((x - bigXf.ox) / bigXf.k), ty = Math.floor((y - bigXf.oy) / bigXf.k);
+    if (tx < 0 || ty < 0 || tx >= map.W || ty >= map.H) return;
+    clearTrail();
+    if (G.player.goTo(tx, ty)) {
+      const last = G.player.path[G.player.path.length - 1];
+      dest = { x: last.x, y: last.y };
+      G.showMarker(last.x, last.y);
+      closeBig();
+      LQ.UI.toast(G.state.mode === 'bike' ? '🚲 Op weg! Tik op de kaart of loop zelf om te stoppen.' : '🚶 Op weg! Tik op de kaart of loop zelf om te stoppen.');
+    } else LQ.UI.toast('Daar kun je niet komen. Kies een straat of een pad! 🗺️');
+  }
 
   // Which family bike route passes this school? ("🎡 Plaswijck-route")
   function routeOf(id) {
@@ -305,7 +327,7 @@ LQ.Minimap = (function () {
     $('bm-canvas').addEventListener('click', (e) => {
       const r = $('bm-canvas').getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
       const hit = bigHits.find(h => Math.hypot(h.x - x, h.y - y) <= h.r);
-      if (hit) pick(hit.id);
+      if (hit) pick(hit.id); else travelTo(x, y);
     });
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
