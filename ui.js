@@ -291,7 +291,12 @@ LQ.UI = (function () {
     const p = s.photo, wrap = h('div', { class: 'photo-box' });
     const slot = h('div', { class: 'photo-slot' });
     const showAir = () => { slot.innerHTML = ''; slot.appendChild(aerial(s)); slot.appendChild(h('p', { class: 'small' }, `🛰️ ${s.short} van bovenaf, zoals een vogel het ziet. Kaart: Google.`)); if (btn) btn.textContent = '📷 Terug naar de foto'; showing = 'air'; };
-    const showPhoto = () => { slot.innerHTML = ''; slot.appendChild(h('img', { class: 'school-photo', src: p.src, alt: `Het gebouw van ${s.short}` }));
+    // If the photo doesn't load (Wikimedia sometimes fails the first time), try
+    // the other Wikimedia address once more, and otherwise show the map from above.
+    const photoImg = () => { let tries = 0; const img = h('img', { class: 'school-photo', src: p.src, alt: `Het gebouw van ${s.short}` });
+      img.onerror = () => { tries++; if (tries === 1) img.src = p.src.replace('thumb.wikimedia.org', 'upload.wikimedia.org') + (p.src.includes('?') ? '&' : '?') + 'r=1'; else if (showing === 'photo') showAir(); };
+      return img; };
+    const showPhoto = () => { slot.innerHTML = ''; slot.appendChild(photoImg());
       slot.appendChild(h('p', { class: 'small' }, ['Foto: ', p.credit, ' (', h('a', { href: p.page, target: '_blank', rel: 'noopener' }, p.license), '), Wikimedia Commons'])); if (btn) btn.textContent = '🛰️ Van bovenaf'; showing = 'photo'; };
     let showing = null;
     const btn = p ? h('button', { class: 'btn', onclick: () => (showing === 'photo' ? showAir() : showPhoto()) }, '') : null;
