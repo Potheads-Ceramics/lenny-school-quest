@@ -846,7 +846,7 @@ LQ.Sprites = (function () {
                 shoe: '#2a2a30', wood: '#8a5a2b', woodD: '#6b4520', phone: '#2b2b30', screen: '#8fd8ff' };
     const sheet = canvas(40, 24);
     for (let f = 0; f < 2; f++) {
-      const cell = canvas(20, 24), r = painter(cell.ctx, 0, 0), t = f; // t: tremble offset
+      const cell = canvas(20, 24), r = painter(cell.ctx, 0, 0), t = f, u = f ? -1 : 1; // t, u: tremble offsets
       // chair back and legs
       r(4, 8, 1, 10, A.wood); r(15, 8, 1, 10, A.wood); r(4, 8, 12, 2, A.wood); r(4, 9, 12, 1, A.woodD);
       r(3, 17, 14, 2, A.wood); r(3, 18, 14, 1, A.woodD); r(3, 19, 1, 5, A.woodD); r(16, 19, 1, 5, A.woodD);
@@ -860,7 +860,7 @@ LQ.Sprites = (function () {
       r(9 + t, 9, 2, 1, A.skinD); r(8 + t, 10, 4, 1, A.skinD);
       // arms bent in, hands holding the phone low in front of him
       r(4, 12, 2, 5, A.coat); r(14, 12, 2, 5, A.coat); r(6, 15, 2, 2, A.coat); r(12, 15, 2, 2, A.coat);
-      r(7 + t, 15, 2, 2, A.skin); r(11 + t, 15, 2, 2, A.skin); r(9 + t, 14, 2, 3, A.phone); r(9 + t, 14, 2, 2, A.screen);
+      r(7 + u, 15 + t, 2, 2, A.skin); r(11 + u, 15 + t, 2, 2, A.skin); r(9 + u, 14 + t, 2, 3, A.phone); r(9 + u, 14 + t, 2, 2, A.screen);
       // legs crossed: right leg over the left knee, foot sticking out to the side
       r(5, 17, 5, 2, A.jeans); r(5, 19, 2, 3, A.jeans); r(5, 21, 2, 1, A.jeansD); r(4, 22, 4, 2, A.shoe);
       r(8, 16, 8, 2, A.jeans); r(8, 17, 8, 1, A.jeansD); r(15, 15 + (t ? 1 : 0), 3, 2, A.shoe);

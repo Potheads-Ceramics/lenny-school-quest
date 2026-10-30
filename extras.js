@@ -777,14 +777,20 @@ LQ.Extras = (function () {
   function addJaques(scene, map) {
     const b = findBush(map); if (!b) return [];
     if (!scene.textures.exists('jaques')) { const t = scene.textures.addCanvas('jaques', LQ.Sprites.jaquesSheet()); t.add(0, 0, 0, 0, 20, 24); t.add(1, 0, 20, 0, 20, 24); }
-    if (!scene.anims.exists('jaques-tremble')) scene.anims.create({ key: 'jaques-tremble', frames: [0, 1, 0, 1, 0, 0, 1, 0].map(n => ({ key: 'jaques', frame: n })), frameRate: 9, repeat: -1 });
+    if (!scene.anims.exists('jaques-tremble')) scene.anims.create({ key: 'jaques-tremble', frames: [0, 1].map(n => ({ key: 'jaques', frame: n })), frameRate: 14, repeat: -1 });
     // he sits tucked in right behind the bush (a copy of the bush is drawn in
     // front of him, so it half covers him); invisible until he is found
     const jx = b.x * TS + 15, jy = b.y * TS + 15;
     const spr = scene.add.sprite(jx, jy, 'jaques', 0).setOrigin(0.5, 1).setDepth(jy).play('jaques-tremble').setVisible(!!ex().jaquesFound);
     const front = scene.add.image(b.x * TS + 8, b.y * TS + 16, 'tiles', map.T.BUSH).setOrigin(0.5, 1).setDepth(jy + 1);
     const target = { kind: 'bush', x: b.n.x * TS + 8, y: b.n.y * TS + 12, label: ex().jaquesFound ? '📱 Jaques' : '🌿 Struik', hidden: !ex().jaquesOpen, open: () => openBush() };
-    jaques = { spr, scene, target, bush: b, front };
+    jaques = { spr, scene, target, bush: b, front, popping: false };
+    // he trembles: the whole body shakes a pixel left/right, up/down, many times a second
+    const shake = scene.time.addEvent({ delay: 55, loop: true, callback: () => {
+      if (!spr.visible || (jaques && jaques.popping)) return;
+      spr.setPosition(jx + Math.round(Math.random() * 2 - 1), jy + (Math.random() < 0.3 ? -1 : 0));
+    } });
+    scene.events.once('shutdown', () => shake.remove());
     scene.events.once('shutdown', () => { jaques = null; });
     return [target];
   }
@@ -794,8 +800,9 @@ LQ.Extras = (function () {
     if (!ex().jaquesOpen) return;                  // just a bush, nothing happens
     const s = jaques.scene, spr = jaques.spr;
     if (!spr.visible) {
+      jaques.popping = true;
       spr.setVisible(true).setAlpha(0).setY(spr.y + 6);
-      s.tweens.add({ targets: spr, alpha: 1, y: spr.y - 6, duration: 600, ease: 'Back.out' });
+      s.tweens.add({ targets: spr, alpha: 1, y: spr.y - 6, duration: 600, ease: 'Back.out', onComplete: () => { if (jaques) jaques.popping = false; } });
       s.tweens.add({ targets: jaques.front, angle: { from: -8, to: 8 }, yoyo: true, repeat: 3, duration: 90, onComplete: () => jaques && jaques.front.setAngle(0) });
       ['🌿', '🍃', '🌿'].forEach((c, i) => floatUp(s, jaques.bush.x * TS + 2 + i * 6, jaques.bush.y * TS + 6, c, { size: 7, rise: 14, delay: i * 120 }));
       ex().jaquesFound = true; G().save();
