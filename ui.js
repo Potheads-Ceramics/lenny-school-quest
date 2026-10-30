@@ -260,34 +260,44 @@ LQ.UI = (function () {
     if (c.lessonMin) rows.push(['⏱️', 'Een les duurt', `${c.lessonMin} min` + (c.lessonNote ? ` ${c.lessonNote}` : ''),
       c.lessonMin <= 45 ? 'kort: meer, kortere lessen per dag' : c.lessonMin <= 50 ? 'gewoon: zoals op veel scholen' : c.lessonMin <= 60 ? 'lang: minder vakken op één dag' : 'heel lang: weinig vakken op één dag']);
     else rows.push(['⏱️', 'Een les duurt', ASK, '']);
-    if (c.gymNote) rows.push(['🏃', 'Gym per week', c.gymNote, '']);
+    // Gym: compare minutes, not the number of lessons (2 x 60 min is about as much as 3 x 45 min).
+    const gymMin = (x) => { const k = x.compare || {}; return k.gymLessons && k.lessonMin ? k.gymLessons * k.lessonMin : null; };
+    if (c.gymNote) rows.push(['🏃', 'Gym per week', c.gymNote, c.gymExtra || '']);
     else if (c.gymLessons) {
-      const tot = c.lessonMin ? c.gymLessons * c.lessonMin : null;
-      rows.push(['🏃', 'Gym per week', `${c.gymLessons} lessen` + (tot ? ` (${tot} min)` : ''), c.gymLessons >= 3 ? 'veel: zoveel als de meeste scholen of meer' : 'minder dan op de meeste scholen (daar zijn het er 3)']);
-    } else rows.push(['🏃', 'Gym per week', ASK, '']);
+      const tot = gymMin(s), others = all.map(gymMin).filter(v => v != null).sort((a, b) => a - b);
+      const mid = others.length ? others[Math.floor(others.length / 2)] : null;
+      const cmp = tot == null || mid == null ? '' : tot >= mid + 20 ? 'meer gymtijd dan op de meeste scholen' : tot <= mid - 30 ? 'minder gymtijd dan op de meeste scholen' : 'ongeveer even veel gymtijd als op de meeste scholen';
+      rows.push(['🏃', 'Gym per week', `${c.gymLessons} lessen` + (tot ? ` (${tot} min)` : ''), [cmp, c.gymExtra ? '➕ ' + c.gymExtra : ''].filter(Boolean).join('. ')]);
+    } else rows.push(['🏃', 'Gym per week', ASK, c.gymExtra ? '➕ ' + c.gymExtra : '']);
     rows.push(['🏟️', 'Waar je sport', c.sport || ASK, '']);
     // Trips and camps (30 Oct 2026): the same two lines for every school.
     rows.push(['⛺', 'Kamp in klas 1', c.camp1 || ASK, '']);
     rows.push(['✈️', 'Reizen later', c.later || ASK, '']);
+    // GSA club (30 Oct 2026): the same line for every school.
+    rows.push(['🏳️‍🌈', 'GSA-club', c.gsa || ASK, c.gsaNote || '']);
     return rows;
   }
   /* ---------------- What the school looks like (30 Oct 2026) ----------------
      Every school: a real photo (Wikimedia Commons, free licence, with credit)
      when one exists, and Google Street View at the school's address to look
      around. Schools without a free photo show Street View straight away. */
-  function streetView(s) {
-    return h('iframe', { class: 'sv-frame', src: `https://www.google.com/maps?layer=c&cbll=${s.lat},${s.lon}&output=svembed`, title: `Street View bij ${s.short}`, allowfullscreen: true, referrerpolicy: 'no-referrer-when-downgrade' });
+  // The old Street View embed showed a world map on phones, so: a map from
+  // above (always works) plus a button that opens Street View in Google Maps.
+  function aerial(s) {
+    return h('iframe', { class: 'sv-frame', src: `https://maps.google.com/maps?q=${s.lat},${s.lon}&t=k&z=18&output=embed`, title: `${s.short} van bovenaf`, loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade' });
   }
+  const svLink = (s) => `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${s.lat},${s.lon}`;
   function photoBlock(s) {
     const p = s.photo, wrap = h('div', { class: 'photo-box' });
     const slot = h('div', { class: 'photo-slot' });
-    const showSV = () => { slot.innerHTML = ''; slot.appendChild(streetView(s)); slot.appendChild(h('p', { class: 'small' }, ['🧭 Sleep in het beeld om rond te kijken. Beeld: Google Street View. Zie je niets? ', h('a', { href: `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${s.lat},${s.lon}`, target: '_blank', rel: 'noopener' }, 'Open in Google Maps ↗')])); btn.textContent = p ? '📷 Terug naar de foto' : '🧭 Kijk rond op straat'; showing = 'sv'; };
+    const showAir = () => { slot.innerHTML = ''; slot.appendChild(aerial(s)); slot.appendChild(h('p', { class: 'small' }, `🛰️ ${s.short} van bovenaf, zoals een vogel het ziet. Kaart: Google.`)); if (btn) btn.textContent = '📷 Terug naar de foto'; showing = 'air'; };
     const showPhoto = () => { slot.innerHTML = ''; slot.appendChild(h('img', { class: 'school-photo', src: p.src, alt: `Het gebouw van ${s.short}` }));
-      slot.appendChild(h('p', { class: 'small' }, ['Foto: ', p.credit, ' (', h('a', { href: p.page, target: '_blank', rel: 'noopener' }, p.license), '), Wikimedia Commons'])); btn.textContent = '🧭 Kijk rond op straat'; showing = 'photo'; };
+      slot.appendChild(h('p', { class: 'small' }, ['Foto: ', p.credit, ' (', h('a', { href: p.page, target: '_blank', rel: 'noopener' }, p.license), '), Wikimedia Commons'])); if (btn) btn.textContent = '🛰️ Van bovenaf'; showing = 'photo'; };
     let showing = null;
-    const btn = h('button', { class: 'btn', onclick: () => (showing === 'photo' ? showSV() : p ? showPhoto() : showSV()) }, '');
-    [h('b', {}, `📷 Zo ziet ${s.short} eruit`), slot, p ? C().row([btn]) : null].forEach(x => x && wrap.appendChild(x));
-    p ? showPhoto() : showSV();
+    const btn = p ? h('button', { class: 'btn', onclick: () => (showing === 'photo' ? showAir() : showPhoto()) }, '') : null;
+    const sv = h('a', { class: 'btn', href: svLink(s), target: '_blank', rel: 'noopener' }, '🧭 Kijk rond op straat ↗');
+    [h('b', {}, `📷 Zo ziet ${s.short} eruit`), slot, C().row([btn, sv])].forEach(x => x && wrap.appendChild(x));
+    p ? showPhoto() : showAir();
     return wrap;
   }
 
@@ -297,7 +307,8 @@ LQ.UI = (function () {
       h('ul', { class: 'cmp' }, compareRows(s).map(([ic, k, v, why]) => h('li', {}, [h('span', { class: 'ci', 'aria-hidden': 'true' }, ic), h('span', {}, [h('b', {}, k + ': '), v, why ? h('small', {}, why) : null])]))),
       info.tripsNote ? h('p', { class: 'small' }, '⛺ ' + info.tripsNote) : null,
       h('p', { class: 'small' }, ['📖 Tik op een woord met stippellijntjes om te zien wat het betekent.',
-        c.tripSrc ? h('br') : null, c.tripSrc ? 'Bron kamp en reizen: ' : null, c.tripSrc ? h('a', { href: c.tripSrc[1], target: '_blank', rel: 'noopener' }, c.tripSrc[0]) : null])]);
+        c.tripSrc ? h('br') : null, c.tripSrc ? 'Bron kamp en reizen: ' : null, c.tripSrc ? h('a', { href: c.tripSrc[1], target: '_blank', rel: 'noopener' }, c.tripSrc[0]) : null,
+        c.gsaSrc ? h('br') : null, c.gsaSrc ? 'Bron GSA: ' : null, c.gsaSrc ? h('a', { href: c.gsaSrc[1], target: '_blank', rel: 'noopener' }, c.gsaSrc[0]) : null])]);
   }
   // All schools side by side, same columns for each.
   function compareAll() {
@@ -307,8 +318,8 @@ LQ.UI = (function () {
     const v = (x) => x == null ? '❓' : x;
     C().screen(body, [C().say('Dezelfde vragen voor elke school. ❓ = nog niet gevonden: vraag het op de open dag!'),
       h('div', { class: 'tablewrap' }, [h('table', { class: 'cmptable' }, [
-        h('thead', {}, h('tr', {}, ['School', '👥 Leerlingen', m === 'walk' ? '🚶 min' : '🚲 min', '⏰ Begint', '⏱️ Les', '🏃 Gym', '⛺ Kamp klas 1'].map(t => h('th', {}, t)))),
-        h('tbody', {}, sorted.map(s => { const c = s.compare || {}; return h('tr', {}, [h('td', {}, h('b', {}, s.short)), h('td', {}, s.pupils.toLocaleString('nl')), h('td', {}, String(m === 'walk' ? s.walkMin : s.bikeMin)), h('td', {}, v(c.start)), h('td', {}, c.lessonMin ? c.lessonMin + ' min' : '❓'), h('td', {}, c.gymNote ? 'dans/muziek' : c.gymLessons ? c.gymLessons + '×' : '❓'), h('td', {}, v(c.camp1Short))]); }))])]),
+        h('thead', {}, h('tr', {}, ['School', '👥 Leerlingen', m === 'walk' ? '🚶 min' : '🚲 min', '⏰ Begint', '⏱️ Les', '🏃 Gym', '⛺ Kamp klas 1', '🏳️‍🌈 GSA'].map(t => h('th', {}, t)))),
+        h('tbody', {}, sorted.map(s => { const c = s.compare || {}; return h('tr', {}, [h('td', {}, h('b', {}, s.short)), h('td', {}, s.pupils.toLocaleString('nl')), h('td', {}, String(m === 'walk' ? s.walkMin : s.bikeMin)), h('td', {}, v(c.start)), h('td', {}, c.lessonMin ? c.lessonMin + ' min' : '❓'), h('td', {}, c.gymNote ? 'dans/muziek' : c.gymLessons ? c.gymLessons + '×' + (c.lessonMin ? ' ' + c.lessonMin + '′' : '') + (c.gymExtraShort ? ' ' + c.gymExtraShort : '') : '❓'), h('td', {}, v(c.camp1Short)), h('td', {}, c.gsa ? '✅' : '❓')]); }))])]),
       C().row([C().next('Terug', ranking)])]);
   }
 
@@ -473,6 +484,8 @@ LQ.UI = (function () {
       setTimeout(() => why.classList.remove('hide'), 700 + 3 * 900);
       // Mami is there too (30 Oct 2026)
       setTimeout(() => { if (!$('veil').hidden) { const m = C().say('👏👏 ¡Qué bien, Len! Estoy re orgullosa de vos. ¡Ahora vamos juntos a las open dagen!', 'Mami'); const face = document.createElement('canvas'); face.width = 20; face.height = 14; face.getContext('2d').drawImage(LQ.Sprites.mamiSheet(), 40, 0, 20, 14, 0, 0, 20, 14); face.className = 'mami-face'; m.querySelector('.who').prepend(face); m.classList.add('mami-cheer'); body.insertBefore(m, body.children[2] || null); } }, 700 + 3 * 900 + 400);
+      // ...and Lucia, Lenny's little sister
+      setTimeout(() => { if (!$('veil').hidden && LQ.Extras && LQ.Extras.luciaFace) { const l = LQ.Extras.luciaFace(C().say('🎉 Jaaa, Len! Mag ik mee naar de open dagen? Dan kijk ik ook rond! 💜', 'Lucia')); l.classList.add('mami-cheer'); body.insertBefore(l, body.children[3] || null); } }, 700 + 3 * 900 + 1400);
     }
     st.revealed = true; st.lastRanking = ranked.map(r => r.id); G().save(); hud();
   }

@@ -1003,6 +1003,11 @@
     "tripSrc": [
      "Schoolgids RML 2025-2026",
      "https://www.rml.nl/wp-content/uploads/2025/10/Schoolgids-RML-2025-2026.pdf"
+    ],
+    "gsa": "Ja! Er is een GSA-team, bij de Montessori Academie. De school viert ook Paarse Vrijdag.",
+    "gsaSrc": [
+     "Montessori Lyceum: Montessori Academie (gecheckt 30 okt 2026)",
+     "https://www.rml.nl/ma/"
     ]
    },
    "photo": {
@@ -2449,6 +2454,11 @@
     "tripSrc": [
      "Schoolgids Wolfert Tweetalig 2025-2026",
      "https://www.wolfert.nl/wp-content/uploads/2025/10/wolfert_tweetalig_schoolgids_2025-2026_250x210mm_v10-1.pdf"
+    ],
+    "gsaNote": "Geen GSA gevonden op de website. Wel een bericht over Paarse Vrijdag (2021).",
+    "gsaSrc": [
+     "Wolfert Tweetalig: Paarse Vrijdag (2021)",
+     "https://www.wolfert.nl/tweetalig/nieuws/paarse-vrijdag/"
     ]
    },
    "photo": {
@@ -3315,6 +3325,12 @@
      "Schoolgids Wolfert Dalton 2026-2027",
      "https://www.wolfert.nl/wp-content/uploads/2026/10/Wolfert-Dalton-Schoolgids-2026-2027.pdf"
     ]
+   },
+   "photo": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/2026_Wolfert_Dalton%2C_Rotterdam_schoolgebouw_op_hoek_Jasonweg_en_Argonautenweg.jpg/960px-2026_Wolfert_Dalton%2C_Rotterdam_schoolgebouw_op_hoek_Jasonweg_en_Argonautenweg.jpg",
+    "credit": "Marcel Douwe Dekker",
+    "license": "CC BY-SA 4.0",
+    "page": "https://commons.wikimedia.org/wiki/File:2026_Wolfert_Dalton,_Rotterdam_schoolgebouw_op_hoek_Jasonweg_en_Argonautenweg.jpg"
    }
   },
   {
@@ -4557,6 +4573,17 @@
     "tripSrc": [
      "Schoolgids Laurens Lyceum 2026-2027",
      "https://laurenslyceum.nl/wp-content/uploads/2026/10/schoolgids2627-30-sept.pdf"
+    ],
+    "gymExtra": "Je kunt ook kiezen voor de sportklas: 90 minuten extra sport per week, aan het eind van de dag (zoals mountainbiken, hockey, klimmen of waterskiën). Niet verplicht, en het kost iets extra.",
+    "gymExtraShort": "+ sportklas",
+    "gymExtraSrc": [
+     "Laurens Lyceum, Nieuwe leerlingen: Expertprogramma's (gecheckt 30 okt 2026)",
+     "https://laurenslyceum.nl/nieuweleerlingen/#expertprogramma"
+    ],
+    "gsa": "Ja! De GSA (Gender & Sexuality Alliance). Elke vrijdag om 15:00, met iets lekkers. Iedereen is welkom: lhbtiq+, vrienden, of gewoon nieuwsgierig.",
+    "gsaSrc": [
+     "Laurens Lyceum: GSA (gecheckt 30 okt 2026)",
+     "https://laurenslyceum.nl/gsa/"
     ]
    }
   },
@@ -8625,6 +8652,11 @@
     "tripSrc": [
      "Activiteiten onderbouw Emmauscollege",
      "https://www.emmauscollege.nl/leerlingen/activiteiten/onderbouw/"
+    ],
+    "gsa": "Ja! De GSA organiseert leuke dingen, zoals een pubquiz, een creatieve middag en Paarse Vrijdag.",
+    "gsaSrc": [
+     "Emmauscollege: Paarse Vrijdag, dec 2025 (gecheckt 30 okt 2026)",
+     "https://www.emmauscollege.nl/terugkijken-op-een-geslaagde-paarse-vrijdag-%f0%9f%92%9c/"
     ]
    }
   },
@@ -9247,6 +9279,12 @@
     "tripSrc": [
      "Schoolkosten Erasmiaans Gymnasium 2026-2027",
      "https://www.erasmiaans.nl/ouders/schoolkosten/"
+    ],
+    "gsa": "Ja! De GSA. Die helpt met Coming Out Day en Paarse Vrijdag.",
+    "gsaNote": "Paarse Vrijdag was er ook in oktober 2026.",
+    "gsaSrc": [
+     "Erasmiaans Gymnasium: GSA (gecheckt 30 okt 2026)",
+     "https://www.erasmiaans.nl/leerlingen/activiteiten/gsa/"
     ]
    },
    "photo": {
@@ -10706,6 +10744,28 @@
     ]
    },
    {
+    "id": "plaswijck-spur",
+    "name": "Naar la casita azul",
+    "parent": "plaswijck",
+    "stops": [
+     "blauwe-huisje"
+    ],
+    "points": [
+     [
+      51.95884,
+      4.47612
+     ],
+     [
+      51.96289,
+      4.47612
+     ],
+     [
+      51.96648,
+      4.4783
+     ]
+    ]
+   },
+   {
     "id": "dierentuin",
     "name": "Dierentuin-route",
     "icon": "🦒",
@@ -10764,6 +10824,14 @@
    "lat": 51.93662,
    "lon": 4.47507,
    "say": "Het huis van Mam! 🏡"
+  },
+  {
+   "id": "blauwe-huisje",
+   "label": "La casita azul",
+   "kind": "shed",
+   "lat": 51.9675,
+   "lon": 4.4793,
+   "say": "La casita azul in de buurtuin. Jullie eigen plekje! 🥕🌻"
   },
   {
    "id": "plaswijck",
@@ -10827,6 +10895,7 @@
   "note": "Zelfde vragen voor elke school. Leeg = niet gevonden: vraag het op de open dag.",
   "tripsChecked": "2026-10-30",
   "tripsNote": "Hoeveel nachten een kamp duurt, staat bij geen enkele school online. Vraag het op de open dag.",
-  "photosNote": "Foto's: Wikimedia Commons (vrije licentie, gecheckt 30 okt 2026). Scholen zonder vrije foto: Google Street View op het adres."
+  "photosNote": "Foto's: Wikimedia Commons (vrije licentie, gecheckt 30 okt 2026). Scholen zonder vrije foto: kaart van bovenaf (Google), en een knop naar Street View.",
+  "gsaNote": "GSA gezocht op de websites van de scholen op 30 okt 2026. Gevonden: Laurens, Erasmiaans, Emmaus, Montessori Lyceum. Niet gevonden: Wolfert Tweetalig, Wolfert Dalton, Marnix, Libanon. Nog niet goed doorzocht: Melanchthon, Codarts, Het Lyceum, Lyceum Kralingen, Rudolf Steiner, Theaterhavo-vwo, Thorbecke."
  }
 }

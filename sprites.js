@@ -233,7 +233,7 @@ LQ.Sprites = (function () {
     return sheet.c;
   }
 
-  /* Fifi, the kitten at Mam's: black and white ("tuxedo") — black head and
+  /* Fifi, the family's cat (a boy), who hangs out at Mam's: black and white ("tuxedo") — black head and
      back, a white stripe down the face, white muzzle, chest and paws, a pink
      nose and big green eyes (from the photo). */
   const FIFI = { fur: '#24242a', dark: '#24242a', light: '#f4f2ee', muzzle: '#f4f2ee', belly: '#f4f2ee', paw: '#f4f2ee',
@@ -727,6 +727,93 @@ LQ.Sprites = (function () {
     return sheet.c;
   }
 
+
+  /* Jiska (at la casita azul): wavy blond hair, glasses, a dark navy outdoor
+     jacket, grey trousers (from a family photo). 4 frames of 20x24:
+     0 = axe up, 1 = axe down (chopping), 2-3 = waving. */
+  function jiskaSheet() {
+    const A = { hair: '#e3c27a', hairL: '#f3dca0', hairD: '#c19a52', skin: '#f4cdb2', skinD: '#e0ab8f', glass: '#6d6a66', lens: '#e4eef3',
+                eye: '#3a2a20', mouth: '#b4544c', coat: '#2f3448', coatL: '#454b63', coatD: '#22263a', pants: '#8d9097', shoe: '#2a2420',
+                axe: '#c9ccd1', axeD: '#8e9299', handle: '#9a6a3c' };
+    const sheet = canvas(80, 24);
+    for (let f = 0; f < 4; f++) {
+      const cell = canvas(20, 24), r = painter(cell.ctx, 2, 0);
+      // wavy blond hair, pulled back with loose curls at the sides
+      r(4, 0, 8, 2, A.hair); r(3, 1, 10, 4, A.hair); r(2, 4, 3, 6, A.hair); r(11, 4, 3, 6, A.hair); r(12, 9, 2, 2, A.hair);
+      [[5, 0], [9, 1], [3, 2], [12, 3], [2, 6], [13, 7]].forEach(([x, y]) => r(x, y, 1, 1, A.hairL));
+      [[7, 1], [4, 5], [11, 5], [2, 8], [13, 9]].forEach(([x, y]) => r(x, y, 1, 1, A.hairD));
+      // face with round glasses and a big smile
+      r(5, 4, 6, 7, A.skin); r(5, 4, 6, 1, A.hair);
+      r(4, 6, 4, 3, A.glass); r(9, 6, 4, 3, A.glass); r(5, 7, 2, 1, A.lens); r(10, 7, 2, 1, A.lens); r(8, 7, 1, 1, A.glass);
+      r(6, 7, 1, 1, A.eye); r(10, 7, 1, 1, A.eye);
+      r(6, 9, 4, 1, A.mouth); r(7, 10, 2, 1, '#ffffff'); r(5, 10, 1, 1, A.skinD); r(10, 10, 1, 1, A.skinD);
+      r(7, 11, 2, 1, A.skin);
+      // navy jacket with a zip and a chest strap (backpack)
+      r(3, 12, 10, 7, A.coat); r(8, 12, 1, 7, A.coatD); r(4, 12, 1, 1, A.coatL); r(11, 12, 1, 1, A.coatL); r(3, 15, 10, 1, A.coatD);
+      if (f < 2) {
+        // both hands on the axe handle
+        const up = f === 0;
+        r(2, 13, 1, 4, A.coat); r(13, 13, 1, 4, A.coat);
+        if (up) { r(3, 9, 2, 4, A.coat); r(11, 9, 2, 4, A.coat); r(7, 7, 2, 2, A.skin); r(7, 1, 2, 7, A.handle); r(4, -1 + 1, 6, 3, A.axe); r(4, 1, 6, 1, A.axeD); }
+        else { r(4, 17, 2, 1, A.skin); r(10, 17, 2, 1, A.skin); r(6, 17, 9, 1, A.handle); r(14, 15, 3, 5, A.axe); r(14, 19, 3, 1, A.axeD); }
+      } else {
+        r(2, 13, 1, 4, A.coat); r(2, 17, 1, 1, A.skin);
+        if (f === 2) { r(13, 10, 2, 3, A.coat); r(15, 8, 1, 3, A.coat); r(15, 5, 2, 3, A.skin); }
+        else { r(13, 10, 2, 3, A.coat); r(15, 10, 1, 1, A.coat); r(16, 8, 2, 2, A.skin); }
+      }
+      r(4, 19, 8, 2, A.pants); r(5, 21, 2, 1, A.pants); r(9, 21, 2, 1, A.pants); r(5, 22, 3, 1, A.shoe); r(8, 22, 3, 1, A.shoe);
+      outline(cell.ctx, 20, 24, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 20, 0);
+    }
+    return sheet.c;
+  }
+  /* A chopping block with a log on it (16x12): frame 0 whole, frame 1 split. */
+  function chopBlock() {
+    const k = canvas(32, 12);
+    for (let f = 0; f < 2; f++) {
+      const cell = canvas(16, 12), r = painter(cell.ctx, 0, 0);
+      r(3, 7, 10, 4, '#8a5a2b'); r(3, 7, 10, 1, '#c79a5e'); r(5, 8, 6, 1, '#a8743f');
+      if (!f) { r(6, 1, 4, 6, '#9a6a3c'); r(6, 1, 4, 1, '#e3c493'); r(7, 2, 2, 1, '#c79a5e'); }
+      else { r(3, 3, 3, 4, '#9a6a3c'); r(3, 3, 3, 1, '#e3c493'); r(10, 3, 3, 4, '#9a6a3c'); r(10, 3, 3, 1, '#e3c493'); }
+      outline(cell.ctx, 16, 12, C.outline);
+      k.ctx.drawImage(cell.c, f * 16, 0);
+    }
+    return k.c;
+  }
+
+  /* Lucia, Lenny's little sister: long brown hair with a fringe, a white
+     sweater with little dark cats and bats, jeans (from a family photo).
+     A bit smaller than the grown-ups. 4 frames of 20x24: 0-1 running,
+     2 = jumping with arms up, 3 = landing with arms up. */
+  function luciaSheet() {
+    const A = { hair: '#5e3d26', hairL: '#7f5536', hairD: '#3f2817', skin: '#f6d2bb', skinD: '#e6b39a', eye: '#3a2a20', mouth: '#c0606a', cheek: '#f1a5a5',
+                top: '#f1ebe2', dot: '#2b2b30', mint: '#8fd1bf', pants: '#4a6fa8', shoe: '#e8475f' };
+    const sheet = canvas(80, 24);
+    for (let f = 0; f < 4; f++) {
+      const cell = canvas(20, 24), r = painter(cell.ctx, 3, f === 2 ? 1 : 4);
+      const cheer = f >= 2, step = f % 2;
+      // long hair with a fringe, down past the shoulders
+      r(3, 0, 8, 2, A.hair); r(2, 1, 10, 3, A.hair); r(2, 4, 2, 9, A.hair); r(10, 4, 2, 9, A.hair); r(1, 8, 1, 4, A.hair); r(12, 8, 1, 4, A.hair);
+      [[4, 0], [8, 1], [2, 5], [11, 6]].forEach(([x, y]) => r(x, y, 1, 1, A.hairL)); [[6, 1], [3, 9], [10, 10]].forEach(([x, y]) => r(x, y, 1, 1, A.hairD));
+      // face: fringe, big eyes, rosy cheeks
+      r(4, 3, 6, 6, A.skin); r(4, 3, 6, 2, A.hair); r(5, 5, 1, 1, A.skin);
+      r(5, 5, 1, 2, A.eye); r(8, 5, 1, 2, A.eye); r(4, 7, 1, 1, A.cheek); r(9, 7, 1, 1, A.cheek);
+      if (cheer) { r(6, 7, 2, 2, A.mouth); } else { r(6, 7, 2, 1, A.mouth); }
+      // white sweater with tiny cats and bats
+      r(3, 9, 8, 6, A.top); [[4, 10], [8, 11], [5, 13], [9, 13]].forEach(([x, y]) => r(x, y, 1, 1, A.dot)); r(7, 10, 1, 1, A.mint); r(6, 12, 1, 1, A.mint);
+      if (!cheer) { r(2, 10 - (step ? 1 : 0), 1, 3, A.top); r(2, 13 - (step ? 1 : 0), 1, 1, A.skin); r(11, 10 - (step ? 0 : 1), 1, 3, A.top); r(11, 13 - (step ? 0 : 1), 1, 1, A.skin); }
+      else { r(1, 6, 2, 3, A.top); r(0, 4, 2, 2, A.skin); r(11, 6, 2, 3, A.top); r(12, 4, 2, 2, A.skin); }
+      // jeans and pink shoes
+      r(4, 15, 6, 1, A.pants);
+      if (!cheer && step) { r(3, 16, 2, 2, A.pants); r(9, 16, 2, 1, A.pants); r(3, 18, 2, 1, A.shoe); r(9, 17, 3, 1, A.shoe); }
+      else if (f === 2) { r(4, 16, 2, 1, A.pants); r(8, 16, 2, 1, A.pants); r(3, 17, 3, 1, A.shoe); r(8, 17, 3, 1, A.shoe); }
+      else { r(4, 16, 2, 2, A.pants); r(8, 16, 2, 2, A.pants); r(4, 18, 2, 1, A.shoe); r(8, 18, 2, 1, A.shoe); }
+      outline(cell.ctx, 20, 24, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 20, 0);
+    }
+    return sheet.c;
+  }
+
   /* Speech bubbles above people: "!" = challenge waiting, tick = done. */
   function bubble(kind) {
     const k = canvas(13, 14), r = painter(k.ctx, 1, 1);
@@ -738,5 +825,5 @@ LQ.Sprites = (function () {
     return k.c;
   }
 
-  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, bubble, TILE, colors: C };
+  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, jiskaSheet, chopBlock, luciaSheet, bubble, TILE, colors: C };
 })();

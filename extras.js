@@ -1,7 +1,9 @@
 /* =====================================================================
    EXTRAS — small surprises that never change the ranking.
    - Easter eggs at the family landmarks (Abu Ana, the giraffe, the
-     football pitch, Plaswijck, De Blijberg, Vroesenpark, la casita azul).
+     football pitch, Plaswijck, De Blijberg, Vroesenpark, la casita azul
+     with Jiska chopping wood). Lucia, Lenny's sister, waits at the zoo and
+     runs over to cheer at the bike rewards and the cube.
      Each takes a few seconds and gives no points.
    - Bike rewards for visiting schools: a bell at 3 visits, a golden
      bike at 5 visits.
@@ -81,12 +83,13 @@ LQ.Extras = (function () {
       return 'Abu Ana komt naar buiten om je gedag te zeggen! 💛';
     },
     'dierentuin': (s, p) => {
+      luciaZoo(s, p);
       const g = emo(s, p.x + 10, p.y - 26, '🦒', 16).setDepth(p.y - 1);
       g.setAlpha(0);
       s.tweens.add({ targets: g, y: p.y - 44, alpha: 1, duration: 500, ease: 'Back.out',
         onComplete: () => s.tweens.add({ targets: g, angle: { from: -8, to: 8 }, yoyo: true, repeat: 2, duration: 220,
           onComplete: () => s.tweens.add({ targets: g, y: p.y - 26, alpha: 0, duration: 450, onComplete: () => g.destroy() }) }) });
-      return 'Een giraf kijkt over het hek. Hoi Lenny! 🦒';
+      return 'Een giraf kijkt over het hek. Lucia roept: "Lenny, kijk! De giraf!" 🦒';
     },
     'voetbal': () => { penalty(); return false; }, // false = no toast, the game opens instead
     'plaswijck': (s, p) => {
@@ -123,8 +126,10 @@ LQ.Extras = (function () {
     },
     'blauwe-huisje': (s, p) => {
       ['🥕', '🌻', '🍅'].forEach((c, i) => floatUp(s, p.x - 10 + i * 10, p.y - 8, c, { size: 9, rise: 20, delay: i * 200 }));
-      return null; // keep the normal text
-    }
+      jiskaChat();
+      return false; // Jiska's chat opens instead of a toast
+    },
+
   };
   /* ---------- Penalty at RBFA: 3 shots, about 20 seconds, no points ----------
      The arrow swings left and right; tap (or space) to shoot where it points.
@@ -262,6 +267,8 @@ LQ.Extras = (function () {
   function addLandmark(scene, lm, l, x, y) {
     lms[l.id] = { x, y, scene, door: lm.door };
     if (l.id === 'mam') return [addFifi(scene, lm)];   // extra things to talk to
+    if (l.id === 'blauwe-huisje') return [addJiska(scene, x, y)];
+    if (l.id === 'dierentuin') return [addLucia(scene, x, y)];
     return [];
   }
 
@@ -342,9 +349,9 @@ LQ.Extras = (function () {
   function checkRewards() {
     const e = ex(), n = visits();
     const scene = G().scene;
-    if (n >= BELL_AT && !e.bell) { e.bell = true; G().save(); later('🔔 Je fiets heeft nu een bel! Druk op B, of tik op jezelf als je fietst.'); }
-    if (n >= GOLD_AT && !e.gold) { e.gold = true; G().save(); later('✨ Wow, je fiets is nu van goud! Dat krijg je voor 5 scholen.'); }
-    if (n >= CUBE_FACES && !e.cubeDone) { e.cubeDone = true; G().save(); later('🎉 Je kubus is opgelost! Je hebt 6 scholen bekeken.', 'fanfare'); cubePulse(); }
+    if (n >= BELL_AT && !e.bell) { e.bell = true; G().save(); later('🔔 Je fiets heeft nu een bel! Druk op B, of tik op jezelf als je fietst.'); luciaCheer('Een bel! Tring tring! 🔔'); }
+    if (n >= GOLD_AT && !e.gold) { e.gold = true; G().save(); later('✨ Wow, je fiets is nu van goud! Dat krijg je voor 5 scholen.'); luciaCheer('Een gouden fiets! Wauw, Len! ✨'); }
+    if (n >= CUBE_FACES && !e.cubeDone) { e.cubeDone = true; G().save(); later('🎉 Je kubus is opgelost! Je hebt 6 scholen bekeken.', 'fanfare'); cubePulse(); luciaCheer('Je kubus is klaar! Hoera! 🎉'); }
     paintBike(scene);
     drawCube();
   }
@@ -509,7 +516,7 @@ LQ.Extras = (function () {
     spr.play(want);
   }
 
-  /* ---------- Fifi, the kitten at Mam's house ---------- */
+  /* ---------- Fifi, the family's cat (a boy), at Mam's house ---------- */
   let fifi = null;
   function addFifi(scene, lm) {
     if (!scene.textures.exists('fifi')) {
@@ -527,12 +534,181 @@ LQ.Extras = (function () {
   function fifiChat() {
     const C = LQ.Challenges, h = LQ.h, on = !!G().state.fifiFollow;
     const body = LQ.UI.openPanel('Fifi');
-    C.screen(body, [C.say(on ? 'Miauw! Fifi loopt lekker met je mee. Zal ze nog even blijven, of breng je haar naar huis?' : 'Miauw! Dit is Fifi, de kitten van Mam. Ze wil wel mee op avontuur!', 'Fifi'),
+    C.screen(body, [C.say(on ? 'Miauw! Fifi loopt lekker met je mee. Blijft hij nog even, of breng je hem naar huis?' : 'Miauw! Dit is Fifi. Hij wil mee op avontuur!', 'Fifi'),
       C.row([C.next(on ? '🏠 Breng Fifi naar huis' : '🐾 Kom mee, Fifi!', () => {
         G().state.fifiFollow = !on; G().save(); LQ.UI.closePanel();
-        LQ.UI.toast(on ? 'Fifi rent terug naar Mam. Doei Fifi! 🐾' : 'Fifi loopt met je mee! 🐾');
+        LQ.UI.toast(on ? 'Fifi rent terug naar huis. Doei Fifi! 🐾' : 'Fifi loopt met je mee! 🐾');
         followChanged();
       }), h('button', { class: 'btn', onclick: () => LQ.UI.closePanel() }, 'Aai Fifi 🤍')])]);
+  }
+
+
+  /* ---------- Jiska, chopping wood at la casita azul ---------- */
+  let jiska = null;
+  function anim4(scene, key, sheetFn) {
+    if (scene.textures.exists(key)) return;
+    const tex = scene.textures.addCanvas(key, sheetFn());
+    for (let f = 0; f < 4; f++) tex.add(f, 0, f * 20, 0, 20, 24);
+  }
+  function addJiska(scene, x, y) {
+    anim4(scene, 'jiska', LQ.Sprites.jiskaSheet);
+    if (!scene.textures.exists('chopblock')) { const t = scene.textures.addCanvas('chopblock', LQ.Sprites.chopBlock()); t.add(0, 0, 0, 0, 16, 12); t.add(1, 0, 16, 0, 16, 12); }
+    if (!scene.anims.exists('jiska-chop')) scene.anims.create({ key: 'jiska-chop', frames: [0, 0, 0, 1, 1].map(n => ({ key: 'jiska', frame: n })), frameRate: 5, repeat: -1 });
+    if (!scene.anims.exists('jiska-wave')) scene.anims.create({ key: 'jiska-wave', frames: [2, 3].map(n => ({ key: 'jiska', frame: n })), frameRate: 5, repeat: -1 });
+    const jx = x + 26, jy = y + 4;
+    const block = scene.add.image(jx + 12, jy, 'chopblock', 0).setOrigin(0.5, 1).setDepth(jy);
+    const spr = scene.add.sprite(jx, jy, 'jiska', 0).setOrigin(0.5, 1).setDepth(jy + 1).play('jiska-chop');
+    // a little wood chip each time the axe comes down
+    spr.on('animationupdate', (a, fr) => {
+      if (a.key !== 'jiska-chop' || fr.index !== 4 || !spr.visible) return;
+      block.setFrame(1); scene.time.delayedCall(500, () => block.setFrame(0));
+      if (Math.random() < 0.6) floatUp(scene, jx + 12 + (Math.random() * 8 - 4), jy - 8, '🪵', { size: 5, rise: 8, dur: 600, drift: Math.random() * 10 - 5 });
+    });
+    const target = { kind: 'jiska', x: jx, y: jy - 2, label: '🪓 Jiska', open: () => jiskaChat() };
+    jiska = { spr, block, scene };
+    scene.events.once('shutdown', () => { jiska = null; });
+    return target;
+  }
+  const JISKA_HI = 'Hoi Lenny! Ik hak hout voor het kampvuurtje bij la casita azul. Help je even mee?';
+  function jiskaChat() {
+    const C = LQ.Challenges, h = LQ.h;
+    if (jiska) jiska.spr.play('jiska-wave');
+    const body = LQ.UI.openPanel('Jiska');
+    const back = () => { if (jiska && jiska.spr.scene) jiska.spr.play('jiska-chop'); };
+    C.screen(body, [jiskaFace(C.say(JISKA_HI, 'Jiska')),
+      C.row([C.next('🪓 Ja, ik help mee!', () => chopGame(body, back)), h('button', { class: 'btn', onclick: () => { LQ.UI.closePanel(); back(); } }, 'Nu even niet, doei Jiska! 👋')])]);
+    watchClose(body, back);
+  }
+  function jiskaFace(el) {
+    try { const f = document.createElement('canvas'); f.width = 20; f.height = 14; f.getContext('2d').drawImage(LQ.Sprites.jiskaSheet(), 40, 0, 20, 14, 0, 0, 20, 14); f.className = 'mami-face'; const w = el.querySelector('.who'); if (w) w.prepend(f); el.classList.add('fam-say'); } catch (e) {}
+    return el;
+  }
+  function watchClose(body, fn) {
+    const veil = document.getElementById('veil'); if (!veil) return;
+    const obs = new MutationObserver(() => { if (veil.hidden || !body.isConnected) { obs.disconnect(); fn(); } });
+    obs.observe(veil, { attributes: true, attributeFilter: ['hidden'] });
+  }
+  /* Three logs, tap "Hak!" when the axe is up. About 10 seconds, no points. */
+  function chopGame(body, after) {
+    const C = LQ.Challenges, h = LQ.h;
+    const W = 240, H = 150, dpr = Math.min(3, window.devicePixelRatio || 1);
+    const cv = document.createElement('canvas'); cv.width = W * dpr; cv.height = H * dpr; cv.className = 'pen-cv';
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
+    const info = h('p', { class: 'lead center-t', 'aria-live': 'polite' }, 'Tik op "Hak!" of op het blok. Drie blokken hout.');
+    const btn = h('button', { class: 'btn primary big', onclick: () => hit() }, '🪓 Hak!');
+    const done = h('button', { class: 'btn', hidden: true, onclick: () => { LQ.UI.closePanel(); } }, 'Klaar 👋');
+    C.screen(body, [jiskaFace(C.say('Hout op het blok... en hak! Niet te hard, hoor.', 'Jiska')), h('div', { class: 'pen-wrap' }, cv), info, C.row([btn, done])]);
+    let logs = 0, split = 0, swing = 0, raf, chips = [];
+    function hit() {
+      if (logs >= 3 || swing > 0) return;
+      swing = 1; beep([196, 147], 'square', 0.05, 0.06);
+      setTimeout(() => {
+        split = 1; logs++;
+        for (let i = 0; i < 6; i++) chips.push({ x: 120, y: 92, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 60, t: 0 });
+        info.textContent = logs < 3 ? `Krak! Nog ${3 - logs} ${3 - logs === 1 ? 'blok' : 'blokken'}.` : 'Top! Genoeg hout voor een warm vuurtje. 🔥';
+        setTimeout(() => { split = 0; swing = 0; if (logs >= 3) finish(); }, 650);
+      }, 180);
+    }
+    function finish() {
+      btn.hidden = true; done.hidden = false; beep([392, 523, 659, 784], 'triangle', 0.05, 0.1);
+      const first = body.querySelector('.bubble'), thanks = jiskaFace(C.say('Dankjewel, Lenny! Jij bent een echte houthakker. Kom je straks een marshmallow roosteren? 🔥', 'Jiska'));
+      if (first) first.replaceWith(thanks); else body.prepend(thanks);
+      if (jiska && jiska.spr.scene) floatUp(jiska.scene, jiska.spr.x + 12, jiska.spr.y - 4, '🔥', { size: 10, rise: 16, dur: 3000 });
+    }
+    function draw(dt) {
+      ctx.fillStyle = '#7fbf5a'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#6aa84a'; for (let x = 0; x < W; x += 24) ctx.fillRect(x, 0, 12, H);
+      // the pile of chopped wood
+      for (let i = 0; i < logs * 2; i++) { const px = 30 + (i % 4) * 10, py = 120 - Math.floor(i / 4) * 8; ctx.fillStyle = '#9a6a3c'; ctx.fillRect(px, py, 9, 7); ctx.fillStyle = '#e3c493'; ctx.fillRect(px, py, 9, 2); }
+      // chopping block
+      ctx.fillStyle = '#6b4a2b'; ctx.fillRect(95, 100, 50, 26); ctx.fillStyle = '#c79a5e'; ctx.fillRect(95, 100, 50, 5);
+      if (logs < 3 || split) {
+        ctx.fillStyle = '#9a6a3c';
+        if (!split) { ctx.fillRect(108, 70, 24, 30); ctx.fillStyle = '#e3c493'; ctx.fillRect(108, 70, 24, 5); }
+        else { ctx.fillRect(98, 76, 14, 24); ctx.fillRect(128, 76, 14, 24); ctx.fillStyle = '#e3c493'; ctx.fillRect(98, 76, 14, 4); ctx.fillRect(128, 76, 14, 4); }
+      }
+      // axe: up, or coming down
+      const a = swing ? 0.45 : 1.35, cx = 178, cy = 118;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(a);
+      ctx.fillStyle = '#9a6a3c'; ctx.fillRect(-60, -3, 64, 6);
+      ctx.fillStyle = '#c9ccd1'; ctx.fillRect(-66, -14, 12, 24); ctx.fillStyle = '#8e9299'; ctx.fillRect(-66, -14, 3, 24);
+      ctx.restore();
+      chips = chips.filter(c => (c.t += dt) < 0.8);
+      chips.forEach(c => { c.x += c.vx * dt; c.y += c.vy * dt; c.vy += 300 * dt; ctx.fillStyle = '#c79a5e'; ctx.fillRect(c.x, c.y, 3, 3); });
+      ctx.fillStyle = 'rgba(43,29,22,.75)'; ctx.fillRect(6, 6, 74, 18); ctx.fillStyle = '#fff'; ctx.font = '600 12px Fredoka, sans-serif'; ctx.fillText(`🪵 ${logs} van 3`, 10, 19);
+    }
+    let last = 0;
+    function step(ts) { if (!cv.isConnected) { after && after(); return; } const dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts; draw(dt); raf = requestAnimationFrame(step); }
+    cv.addEventListener('pointerdown', (e) => { e.preventDefault(); hit(); });
+    const key = (e) => { if ((e.key === ' ' || e.key === 'Enter') && cv.isConnected) { e.preventDefault(); hit(); } else if (!cv.isConnected) document.removeEventListener('keydown', key); };
+    document.addEventListener('keydown', key);
+    raf = requestAnimationFrame(step);
+  }
+
+  /* ---------- Lucia, Lenny's little sister ----------
+     She waits by the zoo gate (she loves the giraffes), and she runs over to
+     cheer when Lenny earns something: the bell, the golden bike, the cube. */
+  let lucia = null;
+  function luciaAnims(scene) {
+    anim4(scene, 'lucia', LQ.Sprites.luciaSheet);
+    if (!scene.anims.exists('lucia-run')) scene.anims.create({ key: 'lucia-run', frames: [0, 1].map(n => ({ key: 'lucia', frame: n })), frameRate: 8, repeat: -1 });
+    if (!scene.anims.exists('lucia-jump')) scene.anims.create({ key: 'lucia-jump', frames: [2, 3].map(n => ({ key: 'lucia', frame: n })), frameRate: 5, repeat: -1 });
+    if (!scene.anims.exists('lucia-idle')) scene.anims.create({ key: 'lucia-idle', frames: [0, 0, 0, 3].map(n => ({ key: 'lucia', frame: n })), frameRate: 2, repeat: -1 });
+  }
+  function addLucia(scene, x, y) {
+    luciaAnims(scene);
+    const lx = x - 30, ly = y + 6;
+    const spr = scene.add.sprite(lx, ly, 'lucia', 0).setOrigin(0.5, 1).setDepth(ly).play('lucia-idle');
+    lucia = { spr, scene, home: { x: lx, y: ly }, busy: false };
+    scene.events.once('shutdown', () => { lucia = null; });
+    return { kind: 'lucia', x: lx, y: ly - 2, label: '💜 Lucia', open: () => luciaChat() };
+  }
+  const LUCIA_HI = ['Hoi Len! Ik wacht hier bij de giraffen. Welke school vond jij het leukst?', 'Len! Wist je dat een giraf maar 7 nekwervels heeft? Net als wij!', 'Hoi Len! Als jij naar de middelbare gaat, mag ik dan je oude fietsbel? 😄'];
+  function luciaChat() {
+    const C = LQ.Challenges, h = LQ.h, n = visits();
+    const body = LQ.UI.openPanel('Lucia');
+    const line = n >= 1 && Math.random() < 0.5 ? `Je hebt al ${n} ${n === 1 ? 'school' : 'scholen'} bekeken! Goed bezig, grote broer! 💜` : LUCIA_HI[Math.floor(Math.random() * LUCIA_HI.length)];
+    C.screen(body, [luciaFace(C.say(line, 'Lucia')), C.row([C.next('🙌 High five!', () => { LQ.UI.closePanel(); luciaHop(); }), h('button', { class: 'btn', onclick: () => LQ.UI.closePanel() }, 'Doei Lucia! 👋')])]);
+  }
+  function luciaFace(el) {
+    try { const f = document.createElement('canvas'); f.width = 20; f.height = 14; f.getContext('2d').drawImage(LQ.Sprites.luciaSheet(), 0, 0, 20, 14, 0, 0, 20, 14); f.className = 'mami-face'; const w = el.querySelector('.who'); if (w) w.prepend(f); el.classList.add('fam-say'); } catch (e) {}
+    return el;
+  }
+  function luciaHop() {
+    if (!lucia || !lucia.spr.scene) return;
+    const s = lucia.scene, spr = lucia.spr;
+    spr.play('lucia-jump'); beep([659, 784, 1046], 'triangle', 0.05, 0.1);
+    s.tweens.add({ targets: spr, y: spr.y - 6, yoyo: true, repeat: 2, duration: 180, onComplete: () => spr.play('lucia-idle') });
+    ['✋', '💜'].forEach((c, i) => floatUp(s, spr.x + 4 + i * 6, spr.y - 20, c, { size: 8, rise: 18, delay: i * 200 }));
+  }
+  function luciaZoo(s, p) { if (lucia && lucia.scene === s && !lucia.busy) luciaHop(); }
+  /* She runs over to Lenny, jumps and cheers, then runs off again. */
+  const luciaQueue = [];
+  function luciaCheer(text) {
+    luciaQueue.push(text);
+    if (luciaQueue.length > 1) return;
+    const go = () => {
+      const t = luciaQueue[0]; if (t == null) return;
+      const s = G().scene, pl = G().player;
+      if (!s || !pl || G().inside || LQ.UI.isOpen()) { setTimeout(go, 1500); return; }
+      luciaAnims(s);
+      const from = pl.spr.x + 90, fy = pl.spr.y + 2, to = pl.spr.x + 16;
+      const spr = s.add.sprite(from, fy, 'lucia', 0).setOrigin(0.5, 1).setDepth(fy + 2).setFlipX(true).play('lucia-run');
+      if (lucia) { lucia.busy = true; lucia.spr.setVisible(false); }
+      s.tweens.add({ targets: spr, x: to, duration: 900, onComplete: () => {
+        spr.play('lucia-jump'); beep([523, 659, 784, 1046], 'triangle', 0.05, 0.1);
+        s.tweens.add({ targets: spr, y: fy - 7, yoyo: true, repeat: 3, duration: 170 });
+        const say = s.add.text(to, fy - 26, '🎉 ' + t, { fontFamily: '"Fredoka", sans-serif', fontSize: '8px', color: '#2b1d16', backgroundColor: '#f3e8ff', padding: { x: 3, y: 1 }, resolution: 6 }).setOrigin(0.5, 1).setDepth(100003);
+        ['🎉', '💜', '⭐', '🎊', '💜'].forEach((c, i) => floatUp(s, to - 12 + i * 6, fy - 20, c, { size: 8, rise: 24, drift: (i - 2) * 4, delay: i * 120, dur: 1500 }));
+        s.time.delayedCall(3200, () => {
+          say.destroy(); spr.play('lucia-run'); spr.setFlipX(false);
+          s.tweens.add({ targets: spr, x: from, alpha: 0, duration: 1000, onComplete: () => {
+            spr.destroy(); if (lucia && lucia.spr.scene) { lucia.spr.setVisible(true); lucia.busy = false; }
+            luciaQueue.shift(); if (luciaQueue.length) setTimeout(go, 600);
+          } });
+        });
+      } });
+    };
+    setTimeout(go, 4200);
   }
 
   /* ---------- Kit (and Fifi) walk along ---------- */
@@ -613,5 +789,5 @@ LQ.Extras = (function () {
 
   function init() { initCube(); }
 
-  return { init, attach, addLandmark, poke, checkRewards, ring, drawCube, visits, kitChanged, followChanged };
+  return { init, attach, addLandmark, poke, checkRewards, ring, drawCube, visits, kitChanged, followChanged, luciaFace };
 })();
