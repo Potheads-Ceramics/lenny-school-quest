@@ -9,7 +9,7 @@ window.LQ = window.LQ || {};
   const TS = 16;
 
   function fresh() {
-    return { v: 1, introDone: false, mode: 'bike', sound: false, steps: {}, answers: {}, visits: {}, revealed: false, lastRanking: [], pos: null };
+    return { v: 1, introDone: false, mode: 'bike', sound: true, station: 'lofi', steps: {}, answers: {}, visits: {}, revealed: false, lastRanking: [], pos: null };
   }
   function load() {
     try { const raw = localStorage.getItem(SAVE_KEY); if (raw) { const s = JSON.parse(raw); if (s && s.v === 1) return Object.assign(fresh(), s); } } catch (e) {}
@@ -80,6 +80,9 @@ window.LQ = window.LQ || {};
       Game.targets = LQ.Schools.create(this, map, Game.data);
 
       // player starts at saved spot or in front of home
+      // 30 Oct 2026: music is now on by default with the lofi station. Switch it on once for old saves too;
+      // after that, Lenny's own choice (🔇) is kept.
+      if (Game.state.audioV !== 1) { Game.state.audioV = 1; Game.state.sound = true; Game.state.station = 'lofi'; Game.save(); }
       // the map changed on 27 Oct 2026 (bike routes, real school spots, finer grid): old saved spots no longer match, so start at home once
       if (Game.state.mapV !== 3) { Game.state.pos = null; Game.state.mapV = 3; Game.save(); }
       const start = Game.state.pos && map.walk[Game.state.pos.y * map.W + Game.state.pos.x] ? Game.state.pos : { x: map.home.door.x, y: map.home.door.y + 1 };

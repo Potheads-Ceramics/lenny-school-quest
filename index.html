@@ -387,6 +387,18 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
 .word-pop b { font-family: var(--display); font-size: 18px; }
 .word-pop p { margin: 0; line-height: 1.45; }
 .word-pop .btn { align-self: flex-end; font-size: 15px; padding: 4px 12px; }
+/* ---------- school photo / Street View (ui.js) ---------- */
+.photo-box { display: flex; flex-direction: column; gap: 6px; background: #fffdf5; border: 2px solid var(--parch-2); padding: 8px 10px; }
+.photo-slot { display: flex; flex-direction: column; gap: 4px; }
+.school-photo { width: 100%; max-height: 260px; aspect-ratio: 4 / 3; object-fit: cover; border: 3px solid var(--wood-dark); background: var(--parch-2); }
+.sv-frame { width: 100%; height: 260px; border: 3px solid var(--wood-dark); background: #ddd; }
+.photo-box .row { justify-content: flex-start; }
+/* ---------- penalty, Mami (extras.js) ---------- */
+.pen-wrap { display: flex; justify-content: center; }
+.pen-cv { width: min(300px, 100%); height: auto; aspect-ratio: 3 / 2; border: 3px solid var(--wood-dark); image-rendering: pixelated; touch-action: none; cursor: pointer; }
+.bubble.mami-cheer { background: #fff3f6; animation: pop .35s ease-out; }
+.bubble.mami-cheer .who { background: #e8475f; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.mami-face { width: 40px; height: 28px; image-rendering: pixelated; background: #fff3f6; border: 2px solid var(--ink); }
 /* ---------- the cube (extras.js) ---------- */
 #cube { position: fixed; z-index: 9; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(var(--hud-h, 76px) + 8px); display: flex; flex-direction: column; align-items: center; gap: 1px;
   background: var(--parch); border: 3px solid var(--wood-dark); box-shadow: 0 3px 0 rgba(0,0,0,.25); padding: 3px 4px 2px; cursor: pointer; font-family: var(--display); color: var(--ink); }
@@ -476,23 +488,23 @@ a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.70.0/phaser.min.js"></script>
-<script src="sprites.js?v=20261030-2"></script>
-<script src="map.js?v=20261030-2"></script>
-<script src="scoring.js?v=20261030-2"></script>
-<script src="music.js?v=20261030-2"></script>
-<script src="ui.js?v=20261030-2"></script>
-<script src="challenges.js?v=20261030-2"></script>
-<script src="coins.js?v=20261030-2"></script>
-<script src="player.js?v=20261030-2"></script>
-<script src="schools.js?v=20261030-2"></script>
-<script src="schoolgames.js?v=20261030-2"></script>
-<script src="interior.js?v=20261030-2"></script>
-<script src="extras.js?v=20261030-2"></script>
-<script src="words.js?v=20261030-2"></script>
-<script src="minimap.js?v=20261030-2"></script>
-<script src="joystick.js?v=20261030-2"></script>
-<script src="cloud-config.js?v=20261030-2"></script>
-<script src="cloud.js?v=20261030-2"></script>
-<script src="main.js?v=20261030-2"></script>
+<script src="sprites.js?v=20261030-3"></script>
+<script src="map.js?v=20261030-3"></script>
+<script src="scoring.js?v=20261030-3"></script>
+<script src="music.js?v=20261030-3"></script>
+<script src="ui.js?v=20261030-3"></script>
+<script src="challenges.js?v=20261030-3"></script>
+<script src="coins.js?v=20261030-3"></script>
+<script src="player.js?v=20261030-3"></script>
+<script src="schools.js?v=20261030-3"></script>
+<script src="schoolgames.js?v=20261030-3"></script>
+<script src="interior.js?v=20261030-3"></script>
+<script src="extras.js?v=20261030-3"></script>
+<script src="words.js?v=20261030-3"></script>
+<script src="minimap.js?v=20261030-3"></script>
+<script src="joystick.js?v=20261030-3"></script>
+<script src="cloud-config.js?v=20261030-3"></script>
+<script src="cloud.js?v=20261030-3"></script>
+<script src="main.js?v=20261030-3"></script>
 
 </body></html>

@@ -185,6 +185,77 @@ LQ.Sprites = (function () {
     return sheet.c;
   }
 
+  /* A cat walking, seen from the side (facing left; flip for right). 4 frames of
+     16x16, a soft trot: diagonal legs move together, the paw in the air is
+     lifted, the body bobs and the tail sways. P = palette (Kit by default;
+     Fifi has her own). P.tux = black-and-white "tuxedo" markings. */
+  function catWalkSheet(P) {
+    const K = P || KIT, sheet = canvas(64, 16);
+    // each leg: [x, lifted?] per frame — near-front, far-front, near-back, far-back
+    const LEGS = [
+      [[2, 0], [5, 1], [12, 1], [9, 0]],
+      [[3, 1], [4, 0], [11, 0], [10, 1]],
+      [[5, 1], [2, 0], [9, 0], [12, 1]],
+      [[4, 0], [3, 1], [10, 1], [11, 0]]
+    ];
+    const BOB = [0, -1, 0, -1];
+    const TAIL = [[[13, 7], [14, 6], [14, 5], [15, 4]], [[13, 7], [14, 6], [15, 5], [15, 4]], [[13, 7], [14, 7], [15, 6], [15, 5]], [[13, 7], [14, 6], [15, 5], [15, 4]]];
+    const leg = (r, x, up, col, paw) => { if (up) { r(x, 11, 1, 2, col); r(x - 1, 12, 1, 1, paw); } else { r(x, 11, 1, 3, col); r(x, 14, 1, 1, paw); } };
+    for (let f = 0; f < 4; f++) {
+      const cell = canvas(16, 16), b = BOB[f], r = painter(cell.ctx, 0, b), rl = painter(cell.ctx, 0, 0);
+      const L = LEGS[f];
+      const farCol = K.legFar || K.dark, nearCol = K.leg || K.fur, paw = K.paw || K.light;
+      // far legs first (behind the body)
+      leg(rl, L[1][0], L[1][1], farCol, paw); leg(rl, L[3][0], L[3][1], farCol, paw);
+      // tail
+      TAIL[f].forEach(([x, y]) => r(x, y, 1, 1, K.fur)); r(TAIL[f][3][0], TAIL[f][3][1], 1, 1, K.tailTip || K.dark);
+      // body: rounded back, lighter belly
+      r(4, 7, 9, 4, K.fur); r(5, 6, 7, 1, K.fur); r(5, 10, 7, 1, K.belly || K.light);
+      if (K.stripes !== false) { r(7, 6, 1, 3, K.dark); r(9, 6, 1, 3, K.dark); r(11, 7, 1, 2, K.dark); }
+      if (K.tux) { r(4, 9, 3, 2, K.light); }               // white chest
+      // round head on the left, two pointy ears
+      r(1, 3, 4, 1, K.fur); r(0, 4, 6, 4, K.fur); r(1, 8, 4, 1, K.fur);
+      r(0, 1, 1, 2, K.fur); r(1, 2, 1, 1, K.fur); r(4, 1, 1, 2, K.fur); r(3, 2, 1, 1, K.fur);
+      r(0, 2, 1, 1, K.ear); r(4, 2, 1, 1, K.ear);
+      if (K.tux) { r(1, 4, 1, 4, K.light); r(0, 6, 2, 2, K.light); r(1, 8, 3, 1, K.light); } // white blaze and muzzle
+      else { r(0, 7, 3, 1, K.muzzle); r(1, 8, 3, 1, K.muzzle); }
+      r(2, 5, 1, 1, K.eye); r(0, 6, 1, 1, K.nose);
+      // near legs on top
+      leg(rl, L[0][0], L[0][1], nearCol, paw); leg(rl, L[2][0], L[2][1], nearCol, paw);
+      outline(cell.ctx, 16, 16, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 16, 0);
+    }
+    return sheet.c;
+  }
+
+  /* Fifi, the kitten at Mam's: black and white ("tuxedo") — black head and
+     back, a white stripe down the face, white muzzle, chest and paws, a pink
+     nose and big green eyes (from the photo). */
+  const FIFI = { fur: '#24242a', dark: '#24242a', light: '#f4f2ee', muzzle: '#f4f2ee', belly: '#f4f2ee', paw: '#f4f2ee',
+                 leg: '#24242a', legFar: '#1a1a1f', ear: '#e8a3a8', nose: '#f0a2ad', eye: '#b8cf3e', pupil: '#121214',
+                 whisker: '#f4efe6', tailTip: '#24242a', stripes: false, tux: true };
+  /* Fifi sitting (16x16, 2 frames: tail + blink), same pose as Kit. */
+  function fifiSheet() {
+    const K = FIFI, sheet = canvas(32, 16);
+    for (let f = 0; f < 2; f++) {
+      const cell = canvas(16, 16), r = painter(cell.ctx, 0, 0);
+      if (f) { r(11, 13, 4, 1, K.fur); r(14, 10, 1, 3, K.fur); } else { r(11, 13, 3, 1, K.fur); r(13, 9, 1, 4, K.fur); }
+      r(4, 8, 8, 6, K.fur); r(3, 10, 10, 4, K.fur);
+      r(6, 8, 4, 6, K.light);                               // white chest
+      r(4, 14, 2, 1, K.paw); r(10, 14, 2, 1, K.paw); r(5, 13, 2, 1, K.paw); r(9, 13, 2, 1, K.paw);
+      r(4, 1, 1, 1, K.fur); r(4, 2, 2, 1, K.fur); r(11, 1, 1, 1, K.fur); r(10, 2, 2, 1, K.fur);
+      r(5, 2, 1, 1, K.ear); r(10, 2, 1, 1, K.ear);
+      r(4, 3, 8, 5, K.fur); r(3, 4, 10, 3, K.fur);
+      r(7, 3, 2, 5, K.light); r(6, 6, 4, 2, K.light);       // white blaze and muzzle
+      if (f) { r(5, 5, 2, 1, K.pupil); r(9, 5, 2, 1, K.pupil); }
+      else { r(5, 5, 2, 1, K.eye); r(9, 5, 2, 1, K.eye); r(6, 5, 1, 1, K.pupil); r(9, 5, 1, 1, K.pupil); }
+      r(7, 6, 2, 1, K.nose);
+      outline(cell.ctx, 16, 16, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 16, 0);
+    }
+    return sheet.c;
+  }
+
   /* Portrait for the speech bubble: Kit's face, 24x24, shown big and pixelated */
   let kitFaceURL = null;
   function kitPortrait() {
@@ -308,9 +379,9 @@ LQ.Sprites = (function () {
     let k, r, W, H;
     const make = (w, h) => { W = w; H = h; k = canvas(w, h); r = painter(k.ctx, 0, 0); };
     if (kind === 'family') {
-      // cosy house with a heart on the door (Abu Ana's house)
+      // cosy house; Abu Ana's is red-roofed, Mam's is green-roofed. A heart on the door.
       make(48, 46);
-      const roof = id === 'green' ? '#4f9a62' : '#c8583f', roofD = id === 'green' ? '#3a7a4b' : '#a2402c', wall = id === 'green' ? '#f3e7cf' : '#f6e3c8';
+      const roof = id === 'mam' ? '#4f9a62' : '#c8583f', roofD = id === 'mam' ? '#3a7a4b' : '#a2402c', wall = id === 'mam' ? '#f3e7cf' : '#f6e3c8';
       r(4, 20, 40, 24, wall); r(4, 41, 40, 3, '#d8c7a4');
       for (let y = 0; y < 18; y++) { const w = 12 + y * 2.2; r(Math.round(24 - w / 2), 3 + y, Math.round(w), 1, y % 3 === 2 ? roofD : roof); }
       r(2, 19, 44, 2, roofD);
@@ -576,6 +647,81 @@ LQ.Sprites = (function () {
     return sheet.c;
   }
 
+  /* Mami (Lenny's mum, at home): shoulder-length brown hair, big light
+     glasses, a grey hoodie, dark jeans (from a family photo). Same layout as
+     Abu Ana: 4 frames of 20x24, 0-1 walking, 2-3 waving. Used by extras.js. */
+  function mamiSheet() {
+    const A = { hair: '#6b4128', hairL: '#8a5636', hairD: '#4c2d1b', skin: '#f2c9ab', skinD: '#dca889', glass: '#c9b48a', lens: '#dbe9f2',
+                eye: '#3a2a20', mouth: '#a8504a', hood: '#a9adb3', hoodL: '#c4c8cd', hoodD: '#83878d', pants: '#2c3a66', shoe: '#ece7dc' };
+    const sheet = canvas(80, 24);
+    for (let f = 0; f < 4; f++) {
+      const cell = canvas(20, 24), r = painter(cell.ctx, 2, 0);
+      const wave = f >= 2, step = f % 2;
+      // hair: parted, falling to the shoulders
+      r(4, 1, 8, 2, A.hair); r(3, 2, 10, 3, A.hair); r(3, 5, 2, 7, A.hair); r(11, 5, 2, 7, A.hair); r(2, 9, 2, 3, A.hair); r(12, 9, 2, 3, A.hair);
+      r(5, 1, 3, 1, A.hairL); r(9, 2, 2, 1, A.hairL); r(3, 7, 1, 2, A.hairD); r(12, 7, 1, 2, A.hairD); r(7, 2, 1, 2, A.hairD);
+      // face
+      r(5, 4, 6, 7, A.skin); r(5, 4, 6, 1, A.hair); r(5, 5, 1, 1, A.hair);
+      // big light glasses
+      r(4, 6, 4, 3, A.glass); r(9, 6, 4, 3, A.glass); r(5, 7, 2, 1, A.lens); r(10, 7, 2, 1, A.lens); r(8, 7, 1, 1, A.glass);
+      r(6, 7, 1, 1, A.eye); r(10, 7, 1, 1, A.eye);
+      // smile
+      r(7, 9, 3, 1, A.mouth); r(6, 10, 1, 1, A.skinD); r(10, 10, 1, 1, A.skinD);
+      r(7, 11, 2, 1, A.skin);
+      // grey hoodie with a hood behind the neck and a front pocket
+      r(3, 12, 10, 7, A.hood); r(5, 11, 6, 1, A.hoodD); r(4, 12, 1, 1, A.hoodL); r(11, 12, 1, 1, A.hoodL);
+      r(5, 16, 6, 2, A.hoodD); r(7, 12, 1, 3, A.hoodL); r(8, 12, 1, 3, A.hoodL);
+      // left arm
+      r(2, 13 - (step && !wave ? 1 : 0), 1, 4, A.hood); r(2, 17 - (step && !wave ? 1 : 0), 1, 1, A.skin);
+      // right arm: down when walking, up and waving otherwise
+      if (!wave) { r(13, 13 - (step ? 0 : 1), 1, 4, A.hood); r(13, 17 - (step ? 0 : 1), 1, 1, A.skin); }
+      else if (f === 2) { r(13, 10, 2, 3, A.hood); r(15, 8, 1, 3, A.hood); r(15, 5, 2, 3, A.skin); }
+      else { r(13, 10, 2, 3, A.hood); r(15, 10, 1, 1, A.hood); r(16, 8, 2, 2, A.skin); }
+      // jeans and sneakers
+      r(4, 19, 8, 2, A.pants);
+      if (!wave && step) { r(4, 21, 3, 1, A.pants); r(10, 21, 2, 1, A.pants); r(4, 22, 3, 1, A.shoe); r(10, 22, 3, 1, A.shoe); }
+      else { r(5, 21, 2, 1, A.pants); r(9, 21, 2, 1, A.pants); r(5, 22, 3, 1, A.shoe); r(8, 22, 3, 1, A.shoe); }
+      outline(cell.ctx, 20, 24, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 20, 0);
+    }
+    return sheet.c;
+  }
+
+  /* Mam (at the house with Fifi): wavy, shoulder-length dark-blond hair and an
+     olive-green blouse with white vertical stripes (from a family photo).
+     Same layout: 4 frames of 20x24, 0-1 walking, 2-3 waving. */
+  function mamSheet() {
+    const A = { hair: '#9a6a3c', hairL: '#c08d55', hairD: '#6e4a28', skin: '#f2c9ab', skinD: '#dca889', eye: '#3a2a20', mouth: '#a8504a',
+                top: '#4f5a3a', topD: '#3c452c', stripe: '#ece7dc', pants: '#2b2f3a', shoe: '#3a2a20' };
+    const sheet = canvas(80, 24);
+    for (let f = 0; f < 4; f++) {
+      const cell = canvas(20, 24), r = painter(cell.ctx, 2, 0);
+      const wave = f >= 2, step = f % 2;
+      // wavy hair, fuller at the sides, to the shoulders
+      r(4, 1, 8, 2, A.hair); r(3, 2, 10, 3, A.hair); r(2, 5, 3, 6, A.hair); r(11, 5, 3, 6, A.hair); r(2, 11, 2, 2, A.hair); r(12, 11, 2, 2, A.hair);
+      [[5, 1], [9, 1], [3, 3], [12, 4], [2, 7], [13, 8], [3, 10], [12, 11]].forEach(([x, y]) => r(x, y, 1, 1, A.hairL));
+      [[7, 2], [4, 6], [11, 6], [2, 9], [13, 10]].forEach(([x, y]) => r(x, y, 1, 1, A.hairD));
+      // face, calm smile
+      r(5, 4, 6, 7, A.skin); r(5, 4, 6, 1, A.hair); r(6, 5, 3, 1, A.hair);
+      r(6, 7, 1, 1, A.eye); r(9, 7, 1, 1, A.eye); r(7, 9, 3, 1, A.mouth); r(6, 9, 1, 1, A.skinD);
+      r(7, 11, 2, 1, A.skin);
+      // striped green blouse, v-neck with buttons
+      r(3, 12, 10, 7, A.top); [4, 6, 9, 11].forEach(x => r(x, 12, 1, 7, A.stripe)); r(7, 12, 2, 2, A.skin); r(8, 14, 1, 1, A.topD); r(8, 16, 1, 1, A.topD);
+      // left arm
+      r(2, 13 - (step && !wave ? 1 : 0), 1, 4, A.top); r(2, 17 - (step && !wave ? 1 : 0), 1, 1, A.skin);
+      // right arm: down when walking, up and waving otherwise
+      if (!wave) { r(13, 13 - (step ? 0 : 1), 1, 4, A.top); r(13, 17 - (step ? 0 : 1), 1, 1, A.skin); }
+      else if (f === 2) { r(13, 10, 2, 3, A.top); r(15, 8, 1, 3, A.top); r(15, 5, 2, 3, A.skin); }
+      else { r(13, 10, 2, 3, A.top); r(15, 10, 1, 1, A.top); r(16, 8, 2, 2, A.skin); }
+      r(4, 19, 8, 2, A.pants);
+      if (!wave && step) { r(4, 21, 3, 1, A.pants); r(10, 21, 2, 1, A.pants); r(4, 22, 3, 1, A.shoe); r(10, 22, 3, 1, A.shoe); }
+      else { r(5, 21, 2, 1, A.pants); r(9, 21, 2, 1, A.pants); r(5, 22, 3, 1, A.shoe); r(8, 22, 3, 1, A.shoe); }
+      outline(cell.ctx, 20, 24, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 20, 0);
+    }
+    return sheet.c;
+  }
+
   /* Speech bubbles above people: "!" = challenge waiting, tick = done. */
   function bubble(kind) {
     const k = canvas(13, 14), r = painter(k.ctx, 1, 1);
@@ -587,5 +733,5 @@ LQ.Sprites = (function () {
     return k.c;
   }
 
-  return { lennySheet, kitSheet, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, bubble, TILE, colors: C };
+  return { lennySheet, kitSheet, catWalkSheet, fifiSheet, KIT, FIFI, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, mamiSheet, mamSheet, bubble, TILE, colors: C };
 })();

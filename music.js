@@ -3,7 +3,9 @@
    No audio files: every note is generated in the browser.
    Outside, Lenny's chosen radio station plays (state.station).
    Inside a school, the calm "school" tune plays.
-   Controlled by the 🔇/🔊 button (off by default) and the 📻 radio.
+   Controlled by the 🔇/🔊 button and the 📻 radio. Since 30 Oct 2026 the music
+   is on by default with the calm lofi station (browsers only play sound after
+   the first tap or key press).
 
    How a song is written:
      res     steps per bar (8 = eighth notes, 16 = sixteenth notes)
@@ -17,6 +19,23 @@ window.LQ = window.LQ || {};
 
 LQ.Music = (function () {
   const SONGS = {
+    // Calm lofi: the default station since 30 Oct 2026. Soft keys, warm bass,
+    // a lazy beat and quiet vinyl crackle.
+    lofi: {
+      title: 'Rustig Lofi', icon: '☕', blurb: 'Chill beats, lekker rustig',
+      bpm: 72, res: 8, volume: 0.75, crackle: true,
+      chords: ['F2', 'E2m', 'D2m', 'C3', 'F2', 'E2m', 'D2m', 'G2'],
+      lead: { wave: 'soft', vol: 0.06 },
+      parts: [
+        ['A4 - - C5 - - E5 -', 'D5 - - - B4 - G4 -', 'A4 - - - F4 - - -', 'G4 - - E4 - - . .',
+         'C5 - - D5 - E5 - -', 'G5 - - E5 - D5 - -', 'C5 - - A4 - - G4 -', 'D5 - - - - - . .'],
+        ['. . . . E5 - D5 -', 'C5 - - - . . . .', '. . A4 - C5 - D5 -', 'E5 - - - - - . .',
+         '. . . . G4 - A4 -', 'C5 - - - D5 - - -', 'E5 - D5 - C5 - A4 -', 'B4 - - - - - . .']
+      ],
+      bass: { wave: 'sine', vol: 0.15, pattern: 'x--x-o--' },
+      arp: { wave: 'soft', vol: 0.03 },
+      drums: { kick: 'x.....x.', snare: '....x...', hat: '..x...x.' }
+    },
     town: {
       title: 'Knus Dorpje', icon: '🌻', blurb: 'Vrolijk pixeldeuntje',
       bpm: 118, res: 8, volume: 0.8,
@@ -90,7 +109,7 @@ LQ.Music = (function () {
       drums: null
     }
   };
-  const STATIONS = ['town', 'fiesta', 'funk', 'hard'];
+  const STATIONS = ['lofi', 'town', 'fiesta', 'funk', 'hard'];
 
   /* ---------- notes ---------- */
   const NOTE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
@@ -159,6 +178,12 @@ LQ.Music = (function () {
       return;
     }
     env(g, t, dur, vol);
+    if (wave === 'soft') {
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400; lp.Q.value = 0.3;
+      [0, 6].forEach(c => { const o = ac.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.detune.value = c; o.connect(lp); o.start(t); o.stop(t + dur + 0.05); });
+      lp.connect(g).connect(bus);
+      return;
+    }
     if (wave === 'supersaw') {
       const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200;
       [-14, 0, 14].forEach(c => { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = c; o.connect(lp); o.start(t); o.stop(t + dur + 0.02); });
@@ -168,19 +193,28 @@ LQ.Music = (function () {
     const o = ac.createOscillator(); o.type = wave; o.frequency.value = f;
     o.connect(g).connect(bus); o.start(t); o.stop(t + dur + 0.02);
   }
-  function hit(bus, kind, t, hard) {
+  // tiny random clicks, like an old record
+  function crackle(bus, t) {
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noise; f.type = 'highpass'; f.frequency.value = 3000;
+    g.gain.setValueAtTime(0.012 + Math.random() * 0.01, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.012);
+    s.connect(f).connect(g).connect(bus); s.start(t, Math.random() * 0.3); s.stop(t + 0.02);
+  }
+  function hit(bus, kind, t, hard, soft) {
     if (kind === 'kick') {
       const o = ac.createOscillator(), g = ac.createGain();
       const len = hard ? 0.3 : 0.16;
       o.frequency.setValueAtTime(hard ? 180 : 140, t); o.frequency.exponentialRampToValueAtTime(hard ? 48 : 45, t + len * 0.8);
-      g.gain.setValueAtTime(hard ? 0.3 : 0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+      g.gain.setValueAtTime(hard ? 0.3 : soft ? 0.22 : 0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
       if (hard) { const ws = ac.createWaveShaper(); ws.curve = crunch; o.connect(ws).connect(g); } else o.connect(g);
       g.connect(bus); o.start(t); o.stop(t + len + 0.02);
       return;
     }
     const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
     s.buffer = noise;
-    const cfg = { hat: ['highpass', 7000, 0.05, 0.04], clap: ['bandpass', 1500, 0.14, 0.12], snare: ['bandpass', 2200, 0.16, 0.1] }[kind] || ['bandpass', 1500, 0.1, 0.1];
+    const cfg = soft
+      ? ({ hat: ['highpass', 6000, 0.025, 0.03], snare: ['lowpass', 1800, 0.07, 0.12] }[kind] || ['bandpass', 1500, 0.05, 0.08])
+      : ({ hat: ['highpass', 7000, 0.05, 0.04], clap: ['bandpass', 1500, 0.14, 0.12], snare: ['bandpass', 2200, 0.16, 0.1] }[kind] || ['bandpass', 1500, 0.1, 0.1]);
     f.type = cfg[0]; f.frequency.value = cfg[1];
     g.gain.setValueAtTime(cfg[2], t); g.gain.exponentialRampToValueAtTime(0.0001, t + cfg[3]);
     s.connect(f).connect(g).connect(bus); s.start(t); s.stop(t + cfg[3] + 0.02);
@@ -202,7 +236,8 @@ LQ.Music = (function () {
         if (ev.lead) tone(bus, song.lead.wave, ev.lead.n, t, ev.lead.len * stepLen * 0.95, song.lead.vol);
         if (ev.bass) tone(bus, song.bass.wave, ev.bass.n, t, ev.bass.len * stepLen * 0.9, song.bass.vol);
         if (ev.arp) tone(bus, song.arp.wave, ev.arp.n, t, ev.arp.len * stepLen * 0.8, song.arp.vol);
-        ev.drum.forEach(k => hit(bus, k, t, song.kick === 'hard'));
+        ev.drum.forEach(k => hit(bus, k, t, song.kick === 'hard', song.crackle));
+        if (song.crackle && Math.random() < 0.35) crackle(bus, t + Math.random() * stepLen);
         p.next += stepLen; p.i = (p.i + 1) % p.steps.length;
       }
     }, 25);
@@ -219,7 +254,7 @@ LQ.Music = (function () {
     setTimeout(() => { try { p.bus.disconnect(); } catch (e) {} }, 900);
   }
 
-  function station() { const s = LQ.Game && LQ.Game.state.station; return STATIONS.includes(s) ? s : 'town'; }
+  function station() { const s = LQ.Game && LQ.Game.state.station; return STATIONS.includes(s) ? s : 'lofi'; }
 
   /* Called by the HUD whenever something changes (sound button, radio, enter/leave a school). */
   function sync() {

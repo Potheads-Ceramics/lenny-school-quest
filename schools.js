@@ -70,7 +70,7 @@ LQ.Schools = (function () {
         open: () => s.interior ? LQ.Game.enterSchool(s) : LQ.UI.schoolVisit(s) });
     }
 
-    // landmarks along the two bike routes (Abu Ana, De Blijberg, football, Plaswijck, park, zoo...)
+    // landmarks along the two bike routes (Abu Ana, Mam and Fifi, De Blijberg, football, Plaswijck, park, zoo...)
     const LMD = Object.fromEntries((data.landmarks || []).map(l => [l.id, l]));
     (map.landmarks || []).forEach(lm => {
       const l = LMD[lm.id]; if (!l) return;
@@ -80,13 +80,13 @@ LQ.Schools = (function () {
         if (!scene.textures.exists(key)) scene.textures.addCanvas(key, LQ.Sprites.landmark(lm.kind, lm.id));
         scene.add.image(x, y + 2, key).setOrigin(0.5, 1).setDepth(y);
       }
-      if (LQ.Extras) LQ.Extras.addLandmark(scene, lm, l, x, y);
+      if (LQ.Extras) (LQ.Extras.addLandmark(scene, lm, l, x, y) || []).forEach(t => targets.push(t));
       const icon = { family: '🏡', shed: '🌻', playground: '🎡', zoo: '🦒', park: '🌳', roundabout: '🔄', streetsign: '🪧', primary: '🎒', football: '⚽' }[lm.kind] || '📍';
       const top = lm.kind === 'roundabout' ? (lm.y0 - 1) * TS : y - ({ family: 48, shed: 36, playground: 50, zoo: 58, park: 28, streetsign: 28, primary: 52, football: 40 }[lm.kind] || 30);
       const t = sign(scene, x, top, icon + ' ' + l.label);
       if (lm.kind === 'family' || lm.kind === 'shed' || lm.kind === 'primary' || lm.kind === 'football') t.setBackgroundColor('#ffe0e6');
       const d = lm.door;
-      targets.push({ kind: 'landmark', x: d.x * TS + 8, y: d.y * TS + 12, label: icon + ' ' + l.label, open: () => LQ.UI.toast((LQ.Extras && LQ.Extras.poke(l.id)) || l.say || l.label) });
+      targets.push({ kind: 'landmark', x: d.x * TS + 8, y: d.y * TS + 12, label: icon + ' ' + l.label, open: () => { const m = LQ.Extras ? LQ.Extras.poke(l.id) : null; if (m !== false) LQ.UI.toast(m || l.say || l.label); } });
     });
     // a signpost at the start of each family bike route
     (map.routes || []).filter(r => !r.parent && r.icon).forEach(r => {

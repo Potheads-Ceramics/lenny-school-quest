@@ -88,18 +88,7 @@ LQ.Extras = (function () {
           onComplete: () => s.tweens.add({ targets: g, y: p.y - 26, alpha: 0, duration: 450, onComplete: () => g.destroy() }) }) });
       return 'Een giraf kijkt over het hek. Hoi Lenny! 🦒';
     },
-    'voetbal': (s, p) => {
-      const b = emo(s, p.x + 14, p.y - 12, '⚽', 7);
-      const gx = p.x - 30, gy = p.y - 14;
-      s.tweens.add({ targets: b, x: gx, duration: 700, ease: 'Linear' });
-      s.tweens.add({ targets: b, y: p.y - 30, duration: 350, yoyo: true, ease: 'Sine.out', onComplete: () => {
-        b.destroy();
-        const g = emo(s, gx + 12, gy - 6, 'GOAL!', 10).setColor('#ffffff').setStroke('#2b1d16', 3);
-        s.tweens.add({ targets: g, scale: { from: 0.4, to: 1.2 }, duration: 300, yoyo: true, hold: 500, onComplete: () => g.destroy() });
-        beep([392, 523, 659, 784, 1046], 'square', 0.05, 0.08);
-      } });
-      return 'Hij zit erin! Mooi geschoten, Lenny! ⚽';
-    },
+    'voetbal': () => { penalty(); return false; }, // false = no toast, the game opens instead
     'plaswijck': (s, p) => {
       const w = emo(s, p.x, p.y - 34, '🎡', 16).setOrigin(0.5);
       s.tweens.add({ targets: w, angle: 720, duration: 1600, ease: 'Cubic.inOut', onComplete: () => s.tweens.add({ targets: w, alpha: 0, duration: 300, onComplete: () => w.destroy() }) });
@@ -117,15 +106,164 @@ LQ.Extras = (function () {
       s.tweens.add({ targets: q, y: p.y - 6, yoyo: true, repeat: 5, duration: 100 });
       return 'Kijk, een eekhoorn! 🐿️';
     },
+    'mam': (s, p) => {
+      // Mam steps out of her front door, waves, and throws Lenny a cookie.
+      if (EGGS.mamBusy) return 'Mam zwaait naar je! 💛';
+      EGGS.mamBusy = true;
+      const pl = G().player;
+      stepOut(s, 'mam', LQ.Sprites.mamSheet, p.x + 1, p.y, MAM_SAYS, (x, y) => {
+        if (!pl) return;
+        const c = emo(s, x + 6, y - 14, '🍪', 8).setOrigin(0.5);
+        s.tweens.add({ targets: c, x: pl.spr.x, duration: 800, ease: 'Linear' });
+        s.tweens.add({ targets: c, y: Math.min(y, pl.spr.y) - 30, duration: 400, yoyo: true, ease: 'Sine.out', onComplete: () => { c.destroy(); snack(s); } });
+        s.tweens.add({ targets: c, angle: 540, duration: 800 });
+      }, () => { EGGS.mamBusy = false; });
+      beep([523, 784, 659], 'triangle', 0.05, 0.11);
+      return 'Mam komt naar buiten en gooit je een koekje toe! 🍪';
+    },
     'blauwe-huisje': (s, p) => {
       ['🥕', '🌻', '🍅'].forEach((c, i) => floatUp(s, p.x - 10 + i * 10, p.y - 8, c, { size: 9, rise: 20, delay: i * 200 }));
       return null; // keep the normal text
     }
   };
+  /* ---------- Penalty at RBFA: 3 shots, about 20 seconds, no points ----------
+     The arrow swings left and right; tap (or space) to shoot where it points.
+     The keeper dives a bit late, so a shot into a corner is a goal. */
+  function penalty() {
+    const C = LQ.Challenges, h = LQ.h;
+    const body = LQ.UI.openPanel('⚽ Penalty bij RBFA');
+    const W = 300, H = 200, dpr = Math.min(3, window.devicePixelRatio || 1);
+    const cv = document.createElement('canvas'); cv.width = W * dpr; cv.height = H * dpr; cv.className = 'pen-cv';
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
+    const info = h('p', { class: 'lead center-t', 'aria-live': 'polite' }, 'Tik op het veld of op "Schiet!" als de pijl goed staat.');
+    const shootBtn = h('button', { class: 'btn primary big', onclick: () => shoot() }, '⚽ Schiet!');
+    const again = h('button', { class: 'btn', hidden: true, onclick: () => reset() }, 'Nog een keer');
+    const done = h('button', { class: 'btn', onclick: () => LQ.UI.closePanel() }, 'Klaar');
+    C.screen(body, [C.say('Drie penalty\'s, net als op je club. Lukt het je om te scoren?', 'Kit'), h('div', { class: 'pen-wrap' }, cv), info, C.row([shootBtn, again, done])]);
+    const GX0 = 70, GX1 = 230, GY = 52;                 // goal mouth
+    let aim, dir, keeper, kv, ball, shots, goals, phase, raf, last, result;
+    function reset() { aim = 150; dir = 1; keeper = 150; kv = 0; ball = null; shots = 0; goals = 0; phase = 'aim'; result = ''; again.hidden = true; shootBtn.disabled = false; info.textContent = 'Tik op het veld of op "Schiet!" als de pijl goed staat.'; }
+    function shoot() {
+      if (phase !== 'aim') return;
+      phase = 'fly'; shootBtn.disabled = true;
+      ball = { x: 150, y: 172, tx: aim, ty: GY + 14, t: 0 };
+      // the keeper guesses: dives toward the ball, but a little late and not all the way
+      const guess = 150 + (aim - 150) * (0.35 + Math.random() * 0.6);
+      kv = (guess - keeper) / 0.5;
+      beep([330], 'square', 0.04, 0.05);
+    }
+    function draw() {
+      ctx.fillStyle = '#4f9a42'; ctx.fillRect(0, 0, W, H);
+      for (let x = 0; x < W; x += 30) { ctx.fillStyle = '#5aa84d'; ctx.fillRect(x, 0, 15, H); }
+      ctx.fillStyle = '#f4efe4'; ctx.fillRect(40, GY + 26, 220, 2); ctx.fillRect(149, 165, 3, 3);
+      // goal and net
+      ctx.fillStyle = 'rgba(255,255,255,.35)'; for (let x = GX0; x <= GX1; x += 8) ctx.fillRect(x, GY - 26, 1, 26); for (let y = GY - 26; y <= GY; y += 6) ctx.fillRect(GX0, y, GX1 - GX0, 1);
+      ctx.fillStyle = '#f7f4ee'; ctx.fillRect(GX0 - 3, GY - 30, 3, 32); ctx.fillRect(GX1, GY - 30, 3, 32); ctx.fillRect(GX0 - 3, GY - 30, GX1 - GX0 + 6, 3);
+      // keeper (yellow shirt, gloves)
+      const kx = Math.round(keeper);
+      ctx.fillStyle = '#2b1d16'; ctx.fillRect(kx - 9, GY - 22, 18, 24);
+      ctx.fillStyle = '#f5c518'; ctx.fillRect(kx - 8, GY - 12, 16, 12); ctx.fillStyle = '#f1c7a5'; ctx.fillRect(kx - 4, GY - 21, 8, 8);
+      ctx.fillStyle = '#2f6fd6'; ctx.fillRect(kx - 8, GY, 16, 2); ctx.fillStyle = '#ffffff'; ctx.fillRect(kx - 12, GY - 10, 4, 4); ctx.fillRect(kx + 8, GY - 10, 4, 4);
+      // aim arrow
+      if (phase === 'aim') {
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.setLineDash([6, 5]);
+        ctx.beginPath(); ctx.moveTo(150, 168); ctx.lineTo(aim, GY + 14); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(aim - 4, GY + 10, 8, 8);
+      }
+      // ball
+      const b = ball || { x: 150, y: 172, t: 0 }, r = 6 - (b.t || 0) * 2;
+      ctx.fillStyle = '#f7f4ee'; ctx.beginPath(); ctx.arc(b.x, b.y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2b1d16'; ctx.fillRect(b.x - 1, b.y - 1, 2, 2);
+      // score
+      ctx.fillStyle = 'rgba(43,29,22,.75)'; ctx.fillRect(6, 6, 92, 18); ctx.fillStyle = '#ffffff'; ctx.font = '600 12px Fredoka, sans-serif';
+      ctx.fillText(`⚽ ${goals} van ${shots}  (${3 - shots} over)`, 10, 19);
+      if (result) { ctx.font = '700 26px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#2b1d16'; ctx.fillText(result, 151, 121); ctx.fillStyle = '#ffffff'; ctx.fillText(result, 150, 120); ctx.textAlign = 'left'; }
+    }
+    function step(ts) {
+      if (!cv.isConnected) return;
+      const dt = Math.min(0.05, ((ts - (last || ts)) / 1000)); last = ts;
+      if (phase === 'aim') { aim += dir * 150 * dt; if (aim > GX1 - 6) { aim = GX1 - 6; dir = -1; } if (aim < GX0 + 6) { aim = GX0 + 6; dir = 1; } keeper += Math.sin(ts / 300) * 20 * dt; }
+      if (phase === 'fly' && ball) {
+        ball.t = Math.min(1, ball.t + dt / 0.5);
+        ball.x = 150 + (ball.tx - 150) * ball.t; ball.y = 172 + (ball.ty - 172) * ball.t - Math.sin(ball.t * Math.PI) * 14;
+        keeper += kv * dt; keeper = Math.max(GX0 + 8, Math.min(GX1 - 8, keeper));
+        if (ball.t >= 1) {
+          shots++;
+          const saved = Math.abs(ball.x - keeper) < 13;
+          if (saved) { result = 'Gered!'; beep([300, 220], 'square', 0.04, 0.1); }
+          else { goals++; result = 'GOAL!'; beep([392, 523, 659, 784, 1046], 'square', 0.05, 0.08); }
+          phase = 'wait';
+          setTimeout(() => {
+            if (!cv.isConnected) return;
+            result = ''; ball = null; keeper = 150;
+            if (shots >= 3) {
+              phase = 'end';
+              info.textContent = goals === 3 ? 'Drie uit drie! Wat een spits! 🏆' : goals ? `${goals} van de 3 erin. Mooi geschoten!` : 'De keeper had een goede dag. Nog een keer?';
+              again.hidden = false;
+            } else { phase = 'aim'; shootBtn.disabled = false; }
+          }, 1100);
+        }
+      }
+      draw(); raf = requestAnimationFrame(step);
+    }
+    cv.addEventListener('pointerdown', (e) => { e.preventDefault(); shoot(); });
+    const key = (e) => { if ((e.key === ' ' || e.key === 'Enter') && cv.isConnected) { e.preventDefault(); shoot(); } };
+    document.addEventListener('keydown', key);
+    const veil = document.getElementById('veil');
+    const obs = new MutationObserver(() => { if (veil.hidden || !cv.isConnected) { cancelAnimationFrame(raf); document.removeEventListener('keydown', key); obs.disconnect(); } });
+    obs.observe(veil, { attributes: true, attributeFilter: ['hidden'] }); obs.observe(body, { childList: true });
+    reset(); raf = requestAnimationFrame(step);
+  }
+
+  /* A family member walks out of a front door, waves, says something, then goes
+     back in (Mam; Mami uses the same idea). onWave(x, y) runs while waving. */
+  function stepOut(s, key, sheetFn, x, y0, text, onWave, onDone) {
+    if (!s.textures.exists(key)) {
+      const tex = s.textures.addCanvas(key, sheetFn());
+      for (let f = 0; f < 4; f++) tex.add(f, 0, f * 20, 0, 20, 24);
+      s.anims.create({ key: key + '-walk', frames: [0, 1].map(n => ({ key, frame: n })), frameRate: 6, repeat: -1 });
+      s.anims.create({ key: key + '-wave', frames: [2, 3].map(n => ({ key, frame: n })), frameRate: 5, repeat: -1 });
+    }
+    const y1 = y0 + 18;
+    const who = s.add.sprite(x, y0, key, 0).setOrigin(0.5, 1).setDepth(y0 + 3).setAlpha(0).play(key + '-walk');
+    const sh = s.add.ellipse(x, y0 - 1, 10, 3, 0x000000, 0.18).setDepth(y0 + 2).setAlpha(0);
+    const keep = () => { sh.y = who.y - 1; who.setDepth(who.y + 3); sh.setDepth(who.y + 2); };
+    s.tweens.add({ targets: [who, sh], alpha: 1, duration: 200 });
+    s.tweens.add({ targets: who, y: y1, duration: 800, onUpdate: keep, onComplete: () => {
+      who.play(key + '-wave');
+      const say = s.add.text(x, y1 - 28, text, { fontFamily: '"Fredoka", sans-serif', fontSize: '8px', color: '#2b1d16', backgroundColor: '#fff3f6', padding: { x: 3, y: 1 }, resolution: 6 }).setOrigin(0.5, 1).setDepth(100003);
+      floatUp(s, x + 6, y1 - 22, '💛', { size: 8, rise: 20, delay: 300 });
+      if (onWave) onWave(x, y1);
+      s.time.delayedCall(3000, () => {
+        say.destroy(); who.play(key + '-walk');
+        s.tweens.add({ targets: who, y: y0, duration: 800, onUpdate: keep });
+        s.tweens.add({ targets: [who, sh], alpha: 0, delay: 600, duration: 200, onComplete: () => { who.destroy(); sh.destroy(); if (onDone) onDone(); } });
+      });
+    } });
+  }
+
+  // What Mam says (change it here).
+  const MAM_SAYS = 'Hoi Len! Hier, een koekje voor onderweg!';
+  // The cookie: a little 🍪 floats above Lenny for a while, then "nom!".
+  let snackIcon = null;
+  function snack(s) {
+    const pl = G().player; if (!pl) return;
+    if (snackIcon) snackIcon.destroy();
+    snackIcon = emo(s, pl.spr.x + 7, pl.spr.y - 22, '🍪', 7).setOrigin(0.5);
+    s.time.delayedCall(25000, () => {
+      if (!snackIcon) return;
+      const t = snackIcon; snackIcon = null;
+      floatUp(s, t.x, t.y, 'nom!', { size: 7, rise: 10, dur: 900 }); t.destroy();
+    });
+  }
   // These also happen by themselves when Lenny passes by.
   const AUTO = { 'abu-ana': 3, 'dierentuin': 4 };
 
-  function addLandmark(scene, lm, l, x, y) { lms[l.id] = { x, y, scene, door: lm.door }; }
+  function addLandmark(scene, lm, l, x, y) {
+    lms[l.id] = { x, y, scene, door: lm.door };
+    if (l.id === 'mam') return [addFifi(scene, lm)];   // extra things to talk to
+    return [];
+  }
 
   // Called when Lenny opens a landmark. Returns the text to show (or null).
   function poke(id) {
@@ -135,9 +273,27 @@ LQ.Extras = (function () {
     return fn(p.scene, p);
   }
 
+  /* Mami at home: when Lenny comes back after visiting a school, she steps
+     out of the front door and asks how it was. Once per visited school. */
+  function checkMami(scene, t) {
+    const home = G().map && G().map.home; if (!home) return;
+    const d = home.door; if (Math.abs(d.x - t.x) > 3 || Math.abs(d.y - t.y) > 4) return;
+    const e = ex(); e.mamiAsked = e.mamiAsked || [];
+    const v = G().state.visits || {};
+    const fresh = Object.keys(v).filter(id => v[id] && v[id].done && !e.mamiAsked.includes(id));
+    if (!fresh.length) return;
+    const s = G().data.schools.find(x => x.id === fresh[fresh.length - 1]);
+    e.mamiAsked.push(...fresh); G().save();
+    // Mami steps out of the front door, waves and asks, then goes back in
+    stepOut(scene, 'mami', LQ.Sprites.mamiSheet, d.x * TS + 1, d.y * TS + 2, `Hé Len! Hoe was het bij ${s.short}?`);
+    beep([523, 659], 'triangle', 0.05, 0.12);
+    LQ.UI.toast(`Mami komt naar buiten: "Hé Len! Hoe was het bij ${s.short}? Vertel!" 💛`);
+  }
+
   function checkAuto(scene) {
     const pl = G().player; if (!pl || G().inside || LQ.UI.isOpen() || G().paused) return;
     const t = pl.tile(), now = Date.now();
+    checkMami(scene, t);
     Object.entries(AUTO).forEach(([id, r]) => {
       const p = lms[id]; if (!p || p.scene !== scene) return;
       if (Math.abs(p.door.x - t.x) > r || Math.abs(p.door.y - t.y) > r) return;
@@ -317,35 +473,95 @@ LQ.Extras = (function () {
     idleCube.setVisible(true).setPosition(Math.round(pl.spr.x + side), Math.round(pl.spr.y - 9 + (idleFrame % 2 ? -1 : 0))).setDepth(pl.spr.y + 1);
   }
 
-  /* ---------- Kit walks along (an option in Kit's chat) ---------- */
-  const trail = [];
-  function kitChanged() {
-    const k = LQ.Schools.kitRef, sc = G().scene; if (!k || !sc) return;
-    trail.length = 0;
-    if (!G().state.kitFollow) sc.tweens.add({ targets: k.spr, x: k.home.x, y: k.home.y, duration: 700, ease: 'Sine.inOut', onUpdate: syncKit });
-  }
-  function syncKit() {
-    const k = LQ.Schools.kitRef; if (!k) return;
-    k.target.x = k.spr.x; k.target.y = k.spr.y - 2; k.spr.setDepth(k.spr.y);
-  }
-  function tickKit(scene, delta) {
-    const k = LQ.Schools.kitRef, pl = G().player;
-    if (k) k.target.hidden = !!(G().state.kitFollow && pl && pl.moving); // no "talk to Kit" button while walking together
-    if (!k || !pl || !G().state.kitFollow || k.spr.scene !== scene) return;
-    const px = pl.spr.x, py = pl.spr.y, last = trail[trail.length - 1];
-    if (!last || Math.hypot(px - last.x, py - last.y) > 3) { trail.push({ x: px, y: py }); if (trail.length > 60) trail.shift(); }
-    const gap = G().state.mode === 'bike' ? 9 : 7;           // trail steps behind Lenny
-    const goal = trail.length > gap ? trail[trail.length - 1 - gap] : null;
-    if (!goal) return;
-    const dx = goal.x - k.spr.x, dy = goal.y - k.spr.y, d = Math.hypot(dx, dy);
-    if (d > 260) { k.spr.setPosition(goal.x, goal.y); syncKit(); return; } // far behind (map jump): catch up
-    const sp = (G().state.mode === 'bike' ? 140 : 75) * Math.min(delta, 50) / 1000 * (d > 40 ? 1.4 : 1);
-    if (d > 1) {
-      k.spr.x += dx / d * Math.min(sp, d); k.spr.y += dy / d * Math.min(sp, d);
-      if (Math.abs(dx) > 0.5) k.spr.setFlipX(dx > 0);
+  /* ---------- cats: walk when moving, sit when still ---------- */
+  function catAnims(scene, key, P) {
+    if (!scene.textures.exists(key + '-walk')) {
+      const tex = scene.textures.addCanvas(key + '-walk', LQ.Sprites.catWalkSheet(P));
+      for (let f = 0; f < 4; f++) tex.add(f, 0, f * 16, 0, 16, 16);
     }
-    syncKit();
+    if (!scene.anims.exists(key + '-walk')) scene.anims.create({ key: key + '-walk', frames: [0, 1, 2, 3].map(n => ({ key: key + '-walk', frame: n })), frameRate: 8, repeat: -1 });
+    if (!scene.anims.exists(key + '-run')) scene.anims.create({ key: key + '-run', frames: [0, 1, 2, 3].map(n => ({ key: key + '-walk', frame: n })), frameRate: 13, repeat: -1 });
   }
+  // spr.texture key 'kit' (sitting) or e.g. 'fifi'; walking uses '<key>-walk'
+  function catAnim(scene, spr, moving, fast) {
+    const base = spr.catKey || (spr.catKey = spr.texture.key);
+    catAnims(scene, base, spr.catPal);
+    const want = moving ? base + (fast ? '-run' : '-walk') : base + '-idle';
+    if (spr.anims.currentAnim && spr.anims.currentAnim.key === want) return;
+    if (want.endsWith('-idle') && !scene.anims.exists(want)) { spr.anims.stop(); spr.setTexture(base, 0); return; }
+    spr.play(want);
+  }
+
+  /* ---------- Fifi, the kitten at Mam's house ---------- */
+  let fifi = null;
+  function addFifi(scene, lm) {
+    if (!scene.textures.exists('fifi')) {
+      const tex = scene.textures.addCanvas('fifi', LQ.Sprites.fifiSheet()); tex.add(0, 0, 0, 0, 16, 16); tex.add(1, 0, 16, 0, 16, 16);
+    }
+    if (!scene.anims.exists('fifi-idle')) scene.anims.create({ key: 'fifi-idle', frames: [0, 0, 0, 1].map(n => ({ key: 'fifi', frame: n })), frameRate: 2, repeat: -1 });
+    const hx = (lm.door.x + 1) * TS + 10, hy = lm.door.y * TS + 14;
+    const spr = scene.add.sprite(hx, hy, 'fifi', 0).setOrigin(0.5, 1).setDepth(hy).play('fifi-idle');
+    spr.catKey = 'fifi'; spr.catPal = LQ.Sprites.FIFI;
+    const target = { kind: 'fifi', x: hx, y: hy - 2, label: '🐾 Fifi', open: fifiChat };
+    fifi = { spr, target, home: { x: hx, y: hy } };
+    scene.events.once('shutdown', () => { fifi = null; });
+    return target;
+  }
+  function fifiChat() {
+    const C = LQ.Challenges, h = LQ.h, on = !!G().state.fifiFollow;
+    const body = LQ.UI.openPanel('Fifi');
+    C.screen(body, [C.say(on ? 'Miauw! Fifi loopt lekker met je mee. Zal ze nog even blijven, of breng je haar naar huis?' : 'Miauw! Dit is Fifi, de kitten van Mam. Ze wil wel mee op avontuur!', 'Fifi'),
+      C.row([C.next(on ? '🏠 Breng Fifi naar huis' : '🐾 Kom mee, Fifi!', () => {
+        G().state.fifiFollow = !on; G().save(); LQ.UI.closePanel();
+        LQ.UI.toast(on ? 'Fifi rent terug naar Mam. Doei Fifi! 🐾' : 'Fifi loopt met je mee! 🐾');
+        followChanged();
+      }), h('button', { class: 'btn', onclick: () => LQ.UI.closePanel() }, 'Aai Fifi 🤍')])]);
+  }
+
+  /* ---------- Kit (and Fifi) walk along ---------- */
+  const trail = [];
+  // the cats that can follow Lenny, with how far behind they walk (in trail steps)
+  function followers() {
+    const k = LQ.Schools.kitRef, list = [];
+    if (k) list.push({ ref: k, on: !!G().state.kitFollow, gap: 7 });
+    if (fifi) list.push({ ref: fifi, on: !!G().state.fifiFollow, gap: G().state.kitFollow ? 13 : 7 });
+    return list;
+  }
+  function followChanged() {
+    const sc = G().scene; if (!sc) return;
+    followers().forEach(({ ref, on }) => {
+      if (on || ref.spr.x === ref.home.x && ref.spr.y === ref.home.y) return;
+      catAnim(sc, ref.spr, true, false); ref.spr.setFlipX(ref.home.x > ref.spr.x);
+      const d = Math.hypot(ref.home.x - ref.spr.x, ref.home.y - ref.spr.y);
+      if (d > 300) { ref.spr.setPosition(ref.home.x, ref.home.y); syncCat(ref); catAnim(sc, ref.spr, false); ref.spr.setFlipX(false); return; }
+      sc.tweens.add({ targets: ref.spr, x: ref.home.x, y: ref.home.y, duration: 500 + d * 4, ease: 'Sine.inOut', onUpdate: () => syncCat(ref), onComplete: () => { catAnim(sc, ref.spr, false); ref.spr.setFlipX(false); } });
+    });
+  }
+  function syncCat(ref) { ref.target.x = ref.spr.x; ref.target.y = ref.spr.y - 2; ref.spr.setDepth(ref.spr.y); }
+  function tickFollowers(scene, delta) {
+    const pl = G().player; if (!pl || G().scene !== scene) return;
+    const list = followers().filter(f => f.on && f.ref.spr.scene === scene);
+    followers().forEach(f => { f.ref.target.hidden = !!(f.on && pl.moving); });
+    if (!list.length) return;
+    const px = pl.spr.x, py = pl.spr.y, last = trail[trail.length - 1];
+    if (!last || Math.hypot(px - last.x, py - last.y) > 3) { trail.push({ x: px, y: py }); if (trail.length > 80) trail.shift(); }
+    list.forEach(({ ref, gap }) => {
+      const g = G().state.mode === 'bike' ? gap + 2 : gap;
+      const goal = trail.length > g ? trail[trail.length - 1 - g] : null;
+      if (!goal) return;
+      const k = ref, dx = goal.x - k.spr.x, dy = goal.y - k.spr.y, d = Math.hypot(dx, dy);
+      if (d > 260) { k.spr.setPosition(goal.x, goal.y); syncCat(k); return; }
+      const sp = (G().state.mode === 'bike' ? 140 : 75) * Math.min(delta, 50) / 1000 * (d > 40 ? 1.4 : 1);
+      catAnim(scene, k.spr, d > 1.5, G().state.mode === 'bike' || d > 40);
+      if (d > 1) { k.spr.x += dx / d * Math.min(sp, d); k.spr.y += dy / d * Math.min(sp, d); if (Math.abs(dx) > 0.5) k.spr.setFlipX(dx > 0); }
+      syncCat(k);
+    });
+  }
+
+  /* ---------- Kit walks along (an option in Kit's chat) ---------- */
+  function kitChanged() { followChanged(); }
+
+  function tickKit(scene, delta) { tickFollowers(scene, delta); }
 
   /* ---------- hook into the scenes ---------- */
   function attach(scene) {
@@ -354,14 +570,16 @@ LQ.Extras = (function () {
     scene.events.on('update', (t, d) => {
       tickIdle(scene, d);
       tickKit(scene, d);
+      const pl = G().player; // the cookie floats along with Lenny
+      if (snackIcon && pl && snackIcon.scene === scene) snackIcon.setPosition(pl.spr.x + 7, pl.spr.y - 22 + Math.sin(t / 250));
       acc += d; if (acc > 300 && scene.scene.key === 'world') { acc = 0; checkAuto(scene); }
     });
     scene.events.once('shutdown', () => { scene._lqExtras = false; if (idleCube && idleCube.scene === scene) idleCube = null; });
     if (scene.scene.key === 'world') {
       paintBike.cur = null; paintBike(scene);
       // following Kit starts next to Lenny when the game loads
-      const k = LQ.Schools.kitRef, pl = G().player;
-      if (k && pl && G().state.kitFollow) { k.spr.setPosition(pl.spr.x - 14, pl.spr.y); syncKit(); }
+      const pl = G().player;
+      followers().forEach(({ ref, on }, i) => { if (on && pl) { ref.spr.setPosition(pl.spr.x - 14 - i * 12, pl.spr.y); syncCat(ref); } });
       scene.input.keyboard.on('keydown-B', () => { if (!LQ.UI.isOpen()) ring(); });
       scene.input.on('pointerup', (p) => {
         const pl = G().player; if (!pl || LQ.UI.isOpen() || G().inside) return;
@@ -372,5 +590,5 @@ LQ.Extras = (function () {
 
   function init() { initCube(); }
 
-  return { init, attach, addLandmark, poke, checkRewards, ring, drawCube, visits, kitChanged };
+  return { init, attach, addLandmark, poke, checkRewards, ring, drawCube, visits, kitChanged, followChanged };
 })();

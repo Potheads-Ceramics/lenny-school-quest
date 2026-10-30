@@ -119,7 +119,7 @@ LQ.UI = (function () {
       let i = 0;
       const last = () => i === info.lines.length - 1;
       // The guide ends with the same comparable facts every school has (27 Oct 2026).
-      const show = () => C().screen(body, [C().say(info.lines[i], info.name), last() && G().inside ? compareBlock(G().inside) : null,
+      const show = () => C().screen(body, [C().say(info.lines[i], info.name), i === 0 && G().inside ? photoBlock(G().inside) : null, last() && G().inside ? compareBlock(G().inside) : null,
         C().row([last() ? C().next('Op ontdekkingstocht!', () => closePanel()) : C().next('Verder', () => { i++; show(); })])]);
       show();
       return;
@@ -271,6 +271,26 @@ LQ.UI = (function () {
     rows.push(['✈️', 'Reizen later', c.later || ASK, '']);
     return rows;
   }
+  /* ---------------- What the school looks like (30 Oct 2026) ----------------
+     Every school: a real photo (Wikimedia Commons, free licence, with credit)
+     when one exists, and Google Street View at the school's address to look
+     around. Schools without a free photo show Street View straight away. */
+  function streetView(s) {
+    return h('iframe', { class: 'sv-frame', src: `https://www.google.com/maps?layer=c&cbll=${s.lat},${s.lon}&output=svembed`, title: `Street View bij ${s.short}`, loading: 'lazy', allowfullscreen: true, referrerpolicy: 'no-referrer-when-downgrade' });
+  }
+  function photoBlock(s) {
+    const p = s.photo, wrap = h('div', { class: 'photo-box' });
+    const slot = h('div', { class: 'photo-slot' });
+    const showSV = () => { slot.innerHTML = ''; slot.appendChild(streetView(s)); slot.appendChild(h('p', { class: 'small' }, '🧭 Sleep in het beeld om rond te kijken. Beeld: Google Street View.')); btn.textContent = p ? '📷 Terug naar de foto' : '🧭 Kijk rond op straat'; showing = 'sv'; };
+    const showPhoto = () => { slot.innerHTML = ''; slot.appendChild(h('img', { class: 'school-photo', src: p.src, alt: `Het gebouw van ${s.short}`, loading: 'lazy' }));
+      slot.appendChild(h('p', { class: 'small' }, ['Foto: ', p.credit, ' (', h('a', { href: p.page, target: '_blank', rel: 'noopener' }, p.license), '), Wikimedia Commons'])); btn.textContent = '🧭 Kijk rond op straat'; showing = 'photo'; };
+    let showing = null;
+    const btn = h('button', { class: 'btn', onclick: () => (showing === 'photo' ? showSV() : p ? showPhoto() : showSV()) }, '');
+    wrap.append(h('b', {}, `📷 Zo ziet ${s.short} eruit`), slot, p ? C().row([btn]) : null);
+    p ? showPhoto() : showSV();
+    return wrap;
+  }
+
   function compareBlock(s) {
     const c = s.compare || {}, info = G().data.compareInfo || {};
     return h('div', { class: 'compare' }, [h('b', {}, '📏 Zo is het hier (vergeleken met de andere scholen)'),
@@ -383,6 +403,7 @@ LQ.UI = (function () {
       h('div', { class: 'schoolcard' }, [
         h('div', { class: 'sc-top' }, [h('span', { class: 'roof big', style: `background:${s.roof}` }), h('div', {}, [h('p', { class: 'lead' }, s.kid),
           h('p', { class: 'meta' }, `${s.distanceKm} km van huis · 🚲 ${s.bikeMin} min · 🚶 ${s.walkMin} min · ongeveer ${s.pupils.toLocaleString('nl')} leerlingen`)])]),
+        photoBlock(s),
         compareBlock(s),
         off.length ? h('div', { class: 'offers' }, [h('small', {}, 'Deze school heeft:'), likeChips(off, mineNow)]) : null,
         h('b', {}, '✨ Bijzonder aan deze school'),
@@ -450,6 +471,8 @@ LQ.UI = (function () {
       const cols = [...pod.children];
       [2, 1, 0].forEach((k, n) => setTimeout(() => { const el = cols.find(c => c.classList.contains('p' + (k + 1))); el && el.classList.remove('hide'); LQ.Sound.play(k === 0 ? 'fanfare' : 'win'); if (k === 0) burst(confetti); }, 700 + n * 900));
       setTimeout(() => why.classList.remove('hide'), 700 + 3 * 900);
+      // Mami is there too (30 Oct 2026)
+      setTimeout(() => { if (!$('veil').hidden) { const m = C().say('👏👏 Wat goed gedaan, Len! Ik ben trots op je. Nu gaan we samen kijken op de open dagen!', 'Mami'); const face = document.createElement('canvas'); face.width = 20; face.height = 14; face.getContext('2d').drawImage(LQ.Sprites.mamiSheet(), 40, 0, 20, 14, 0, 0, 20, 14); face.className = 'mami-face'; m.querySelector('.who').prepend(face); m.classList.add('mami-cheer'); body.insertBefore(m, body.children[2] || null); } }, 700 + 3 * 900 + 400);
     }
     st.revealed = true; st.lastRanking = ranked.map(r => r.id); G().save(); hud();
   }
@@ -648,5 +671,5 @@ LQ.UI = (function () {
     $('btn-radio').onclick = () => { LQ.Sound.play(); radio(); };
   }
 
-  return { init, hud, near, compareAll, compareBlock, toast, radio, intro, questBoard, schoolVisit, passport, results, ranking, parents, openPanel, closePanel, readyForResults, infoPanel, feelPanel, isOpen: () => !$('veil').hidden || !!(LQ.Minimap && LQ.Minimap.isOpen()) };
+  return { init, hud, near, compareAll, compareBlock, photoBlock, toast, radio, intro, questBoard, schoolVisit, passport, results, ranking, parents, openPanel, closePanel, readyForResults, infoPanel, feelPanel, isOpen: () => !$('veil').hidden || !!(LQ.Minimap && LQ.Minimap.isOpen()) };
 })();
