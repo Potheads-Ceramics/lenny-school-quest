@@ -472,7 +472,7 @@ LQ.UI = (function () {
       [2, 1, 0].forEach((k, n) => setTimeout(() => { const el = cols.find(c => c.classList.contains('p' + (k + 1))); el && el.classList.remove('hide'); LQ.Sound.play(k === 0 ? 'fanfare' : 'win'); if (k === 0) burst(confetti); }, 700 + n * 900));
       setTimeout(() => why.classList.remove('hide'), 700 + 3 * 900);
       // Mami is there too (30 Oct 2026)
-      setTimeout(() => { if (!$('veil').hidden) { const m = C().say('👏👏 Wat goed gedaan, Len! Ik ben trots op je. Nu gaan we samen kijken op de open dagen!', 'Mami'); const face = document.createElement('canvas'); face.width = 20; face.height = 14; face.getContext('2d').drawImage(LQ.Sprites.mamiSheet(), 40, 0, 20, 14, 0, 0, 20, 14); face.className = 'mami-face'; m.querySelector('.who').prepend(face); m.classList.add('mami-cheer'); body.insertBefore(m, body.children[2] || null); } }, 700 + 3 * 900 + 400);
+      setTimeout(() => { if (!$('veil').hidden) { const m = C().say('👏👏 ¡Qué bien, Len! Estoy re orgullosa de vos. ¡Ahora vamos juntos a las open dagen!', 'Mami'); const face = document.createElement('canvas'); face.width = 20; face.height = 14; face.getContext('2d').drawImage(LQ.Sprites.mamiSheet(), 40, 0, 20, 14, 0, 0, 20, 14); face.className = 'mami-face'; m.querySelector('.who').prepend(face); m.classList.add('mami-cheer'); body.insertBefore(m, body.children[2] || null); } }, 700 + 3 * 900 + 400);
     }
     st.revealed = true; st.lastRanking = ranked.map(r => r.id); G().save(); hud();
   }

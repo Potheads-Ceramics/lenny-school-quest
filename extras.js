@@ -274,7 +274,8 @@ LQ.Extras = (function () {
   }
 
   let mamiHello = false; // Mami's hello once per game session
-  const MAMI_HELLO = ['Hoi Len! Veel plezier met ontdekken! 💛', 'Hé schat! Fiets je voorzichtig?', 'Succes, Len! Ik ben benieuwd welke school je leuk vindt.'];
+  // Mami talks to Lenny in Spanish (30 Oct 2026)
+  const MAMI_HELLO = ['¡Hola Len! ¡Que te diviertas explorando! 💛', '¡Hola, mi amor! ¿Andás con cuidado en la bici?', '¡Suerte, Len! Quiero saber qué escuela te gusta.'];
   /* Mami at home: when Lenny comes back after visiting a school, she steps
      out of the front door and asks how it was. Once per visited school. */
   function checkMami(scene, t) {
@@ -295,9 +296,9 @@ LQ.Extras = (function () {
     const s = G().data.schools.find(x => x.id === fresh[fresh.length - 1]);
     e.mamiAsked.push(...fresh); G().save();
     // Mami steps out of the front door, waves and asks, then goes back in
-    stepOut(scene, 'mami', LQ.Sprites.mamiSheet, d.x * TS + 1, d.y * TS + 2, `Hé Len! Hoe was het bij ${s.short}?`);
+    stepOut(scene, 'mami', LQ.Sprites.mamiSheet, d.x * TS + 1, d.y * TS + 2, `¡Hola Len! ¿Cómo te fue en ${s.short}?`);
     beep([523, 659], 'triangle', 0.05, 0.12);
-    LQ.UI.toast(`Mami komt naar buiten: "Hé Len! Hoe was het bij ${s.short}? Vertel!" 💛`);
+    LQ.UI.toast(`Mami komt naar buiten: "¡Hola Len! ¿Cómo te fue en ${s.short}? ¡Contame!" 💛`);
   }
 
   function checkAuto(scene) {
