@@ -654,8 +654,9 @@ LQ.Extras = (function () {
     if (!scene.anims.exists('lucia-idle')) scene.anims.create({ key: 'lucia-idle', frames: [0, 0, 0, 3].map(n => ({ key: 'lucia', frame: n })), frameRate: 2, repeat: -1 });
   }
   /* Lucia lives at home now (30 Oct 2026): she sings and dances next to her
-     karaoke machine, beside the house. Lenny can sing karaoke with her or
-     dance with her; dancing switches the music to her disco song. */
+     karaoke machine, beside the house. Tapping her (or the machine) makes
+     Lenny sing and dance with her, and the music switches to her disco song.
+     No panel, no game. */
   let karaokeSpr = null, danceT = null;
   function addHome(scene, map) {
     luciaAnims(scene);
@@ -675,20 +676,9 @@ LQ.Extras = (function () {
     } });
     scene.events.once('shutdown', () => { lucia = null; karaokeSpr = null; sway.remove(); stopDance(true); });
     return [
-      { kind: 'lucia', x: lx, y: ly - 2, label: '🎤 Lucia', open: () => luciaChat() },
-      { kind: 'karaoke', x: kx, y: ky - 2, label: '🎤 Karaoke met Lucia', open: () => karaokeGame() }
+      { kind: 'lucia', x: lx, y: ly - 2, label: '🎤 Zing en dans met Lucia', open: () => startDance() },
+      { kind: 'karaoke', x: kx, y: ky - 2, label: '🎤 Zing en dans met Lucia', open: () => startDance() }
     ];
-  }
-  const LUCIA_HI = ['Hoi Len! Ik ben aan het zingen! Zing je mee? 🎤', 'Len! Kom dansen! Mijn karaoke-machine heeft het beste liedje ooit!', 'Hoi grote broer! Wil je mijn nieuwe dansje zien? 💃'];
-  function luciaChat() {
-    const C = LQ.Challenges, h = LQ.h, n = visits();
-    const body = LQ.UI.openPanel('Lucia');
-    const line = n >= 1 && Math.random() < 0.35 ? `Je hebt al ${n} ${n === 1 ? 'school' : 'scholen'} bekeken! Goed bezig, Len! Zullen we dansen? 💜` : LUCIA_HI[Math.floor(Math.random() * LUCIA_HI.length)];
-    C.screen(body, [luciaFace(C.say(line, 'Lucia')),
-      h('div', { class: 'opts col' }, [
-        C.next('🎤 Zing karaoke met Lucia', () => karaokeGame(), 'big left'),
-        C.next('💃 Dans met Lucia', () => { LQ.UI.closePanel(); startDance(); }, 'big left'),
-        h('button', { class: 'btn ghost', onclick: () => LQ.UI.closePanel() }, 'Doei Lucia! 👋')])]);
   }
   function luciaFace(el) {
     try { const f = document.createElement('canvas'); f.width = 20; f.height = 14; f.getContext('2d').drawImage(LQ.Sprites.luciaSheet(), 0, 0, 20, 14, 0, 0, 20, 14); f.className = 'mami-face'; const w = el.querySelector('.who'); if (w) w.prepend(f); el.classList.add('fam-say'); } catch (e) {}
@@ -696,12 +686,12 @@ LQ.Extras = (function () {
   }
   function needSound() { if (!G().state.sound) LQ.UI.toast('Zet het geluid aan 🔊, dan hoor je de dansmuziek!'); }
 
-  /* ---------- dancing: Lenny and Lucia dance, the music turns into disco ---------- */
+  /* ---------- singing and dancing: just the animation, the music turns into disco ---------- */
   let dance = null;
   function startDance() {
     const s = G().scene, pl = G().player; if (!s || !pl || !lucia) return;
     stopDance(true);
-    LQ.Music.override('disco'); needSound();
+    LQ.Music.override('disco');
     lucia.spr.anims.timeScale = 2;
     const t0 = Date.now(), x0 = pl.spr.x, y0 = pl.spr.y;
     dance = { x0, y0, ev: s.time.addEvent({ delay: 250, loop: true, callback: () => {
@@ -710,9 +700,10 @@ LQ.Extras = (function () {
       dance.k = (dance.k || 0) + 1;
       p.spr.setScale(1, dance.k % 2 ? 0.9 : 1.05);
       if (dance.k % 2 === 0) p.spr.setFlipX(!p.spr.flipX);
-      if (dance.k % 3 === 0) floatUp(s, p.spr.x + (Math.random() * 16 - 8), p.spr.y - 22, ['🎵', '✨', '💜', '🪩'][dance.k % 4], { size: 7, rise: 16, dur: 1000 });
+      if (dance.k % 3 === 0) floatUp(s, p.spr.x + (Math.random() * 16 - 8), p.spr.y - 22, ['🎵', '🎤', '🎶', '✨'][dance.k % 4], { size: 7, rise: 16, dur: 1000 });
+      if (dance.k % 4 === 2 && lucia && lucia.spr.scene) floatUp(s, lucia.spr.x + (Math.random() * 10 - 5), lucia.spr.y - 22, ['🎤', '🎶', '💜'][dance.k % 3], { size: 7, rise: 16, dur: 1000 });
     } }) };
-    LQ.UI.toast('💃 Dansen met Lucia! Loop weg om te stoppen.');
+    if (G().state.sound) LQ.UI.toast('🎤 Lenny en Lucia zingen en dansen! Loop weg om te stoppen.'); else needSound();
     beep([523, 659, 784], 'triangle', 0.05, 0.08);
   }
   function stopDance(quiet) {
@@ -721,119 +712,10 @@ LQ.Extras = (function () {
     const p = G().player; if (p && p.spr && p.spr.scene) { p.spr.setScale(1); p.spr.setFlipX(false); }
     if (lucia && lucia.spr.scene) lucia.spr.anims.timeScale = 1;
     dance = null;
-    if (!karaokeOn) LQ.Music.override(null);
+    LQ.Music.override(null);
     if (!quiet) LQ.UI.toast('Wat een dansje! 💜 Lucia: "Nog een keer?"');
   }
 
-  /* ---------- karaoke: an original song, the words light up one by one ---------- */
-  const SONG = [
-    ['Hé', 'Len,', 'hé', 'Len,', 'kijk', 'eens', 'hier!'],
-    ['Samen', 'zingen,', 'wat', 'een', 'plezier!'],
-    ['Grote', 'school', 'of', 'kleine', 'school,'],
-    ['jij', 'kiest', 'zelf,', 'en', 'dat', 'is', 'cool!'],
-    ['Op', 'de', 'fiets,', 'door', 'weer', 'en', 'wind,'],
-    ['jij', 'bent', 'de', 'stoerste', 'die', 'je', 'vindt!'],
-    ['Zing', 'maar', 'mee,', 'zo', 'hard', 'je', 'kan:'],
-    ['Lenny', 'is', 'de', 'karaokeman!']
-  ];
-  let karaokeOn = false;
-  function karaokeGame() {
-    const C = LQ.Challenges, h = LQ.h;
-    const body = LQ.UI.openPanel('🎤 Karaoke met Lucia');
-    const lines = h('div', { class: 'kara-lines' });
-    const meter = h('span', { class: 'kara-meter' }, h('i'));
-    const micInfo = h('p', { class: 'small center-t' }, '');
-    const micBtn = h('button', { class: 'btn', onclick: () => toggleMic() }, '🎙️ Zet de microfoon aan');
-    const startBtn = h('button', { class: 'btn primary big', onclick: () => play() }, '▶️ Start het liedje');
-    C.screen(body, [luciaFace(C.say('Kijk naar het scherm: het gele woord zing je nu. Zing je mee? 🎤', 'Lucia')),
-      h('div', { class: 'kara-screen' }, lines), h('div', { class: 'kara-mic' }, [micBtn, meter]), micInfo, C.row([startBtn])]);
-    let timer = null, stream = null, an = null, raf = null, loud = 0, ac2 = null;
-    const words = [];
-    SONG.forEach((ln, i) => { const spans = ln.map(w => h('span', {}, w + ' ')); const row = h('p', { class: 'kara-line' + (i > 1 ? ' later' : '') }, spans); spans.forEach(sp => words.push({ sp, row, i })); lines.appendChild(row); });
-    function play() {
-      if (timer) return;
-      karaokeOn = true; LQ.Music.override('disco'); needSound();
-      startBtn.disabled = true; startBtn.textContent = '🎶 Zingen maar!';
-      words.forEach(w => w.sp.className = '');
-      let k = -2; // two beats count-in
-      timer = setInterval(() => {
-        if (!body.isConnected) return end(true);
-        k++;
-        if (k < 0) return;
-        if (k >= words.length) return end();
-        const w = words[k];
-        if (k && words[k - 1].i !== w.i) { /* new line */ }
-        words.forEach((x, n) => { x.sp.className = n < k ? 'sung' : n === k ? 'now' : ''; x.row.classList.toggle('cur', x.i === w.i); x.row.classList.toggle('later', x.i > w.i + 1); x.row.classList.toggle('done', x.i < w.i - 1); });
-        w.row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      }, 500);
-    }
-    function end(silent) {
-      clearInterval(timer); timer = null; karaokeOn = false;
-      if (!dance) LQ.Music.override(null);
-      if (silent || !body.isConnected) return;
-      words.forEach(x => { x.sp.className = 'sung'; x.row.classList.remove('later', 'done'); });
-      const stars = stream ? (loud > 25 ? 3 : loud > 8 ? 2 : 1) : 3;
-      const first = body.querySelector('.bubble'), done = luciaFace(C.say(stream && stars < 3 ? `${'⭐'.repeat(stars)} Mooi, Len! Volgende keer nog iets harder? 😄` : '⭐⭐⭐ WAUW, Len! Jij bent een echte popster! 🎉', 'Lucia'));
-      if (first) first.replaceWith(done); else body.prepend(done);
-      done.scrollIntoView({ block: 'nearest' });
-      startBtn.disabled = false; startBtn.textContent = '🔁 Nog een keer';
-      beep([523, 659, 784, 1046], 'triangle', 0.05, 0.1);
-    }
-    // Optional: the microphone only shows a live volume bar ("Lucia hoort je!"). Nothing is recorded or saved.
-    async function toggleMic() {
-      if (stream) { stopMic(); return; }
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        ac2 = new (window.AudioContext || window.webkitAudioContext)();
-        an = ac2.createAnalyser(); an.fftSize = 512; ac2.createMediaStreamSource(stream).connect(an);
-        const buf = new Uint8Array(an.fftSize);
-        micBtn.textContent = '🎙️ Microfoon uit'; micInfo.textContent = 'Lucia hoort je! Er wordt niets opgenomen.';
-        const tick = () => {
-          if (!body.isConnected) return stopMic();
-          an.getByteTimeDomainData(buf); let m = 0; for (const v of buf) m = Math.max(m, Math.abs(v - 128));
-          const pct = Math.min(100, m * 1.6); meter.firstChild.style.width = pct + '%';
-          if (timer && pct > 30) loud++;
-          raf = requestAnimationFrame(tick);
-        };
-        tick();
-      } catch (e) { stream = null; micInfo.textContent = 'De microfoon werkt hier niet. Zing gewoon keihard mee! 😄'; }
-    }
-    function stopMic() {
-      cancelAnimationFrame(raf); if (stream) stream.getTracks().forEach(t => t.stop()); stream = null;
-      try { ac2 && ac2.close(); } catch (e) {} ac2 = null;
-      micBtn.textContent = '🎙️ Zet de microfoon aan'; meter.firstChild.style.width = '0'; micInfo.textContent = '';
-    }
-    watchClose(body, () => { end(true); stopMic(); });
-  }
-  /* She runs over to Lenny, jumps and cheers, then runs off again. */
-  const luciaQueue = [];
-  function luciaCheer(text) {
-    luciaQueue.push(text);
-    if (luciaQueue.length > 1) return;
-    const go = () => {
-      const t = luciaQueue[0]; if (t == null) return;
-      const s = G().scene, pl = G().player;
-      if (!s || !pl || G().inside || LQ.UI.isOpen()) { setTimeout(go, 1500); return; }
-      luciaAnims(s);
-      const from = pl.spr.x + 90, fy = pl.spr.y + 2, to = pl.spr.x + 16;
-      const spr = s.add.sprite(from, fy, 'lucia', 0).setOrigin(0.5, 1).setDepth(fy + 2).setFlipX(true).play('lucia-run');
-      if (lucia) { lucia.busy = true; lucia.spr.setVisible(false); }
-      s.tweens.add({ targets: spr, x: to, duration: 900, onComplete: () => {
-        spr.play('lucia-jump'); beep([523, 659, 784, 1046], 'triangle', 0.05, 0.1);
-        s.tweens.add({ targets: spr, y: fy - 7, yoyo: true, repeat: 3, duration: 170 });
-        const say = s.add.text(to, fy - 26, '🎉 ' + t, { fontFamily: '"Fredoka", sans-serif', fontSize: '8px', color: '#2b1d16', backgroundColor: '#f3e8ff', padding: { x: 3, y: 1 }, resolution: 6 }).setOrigin(0.5, 1).setDepth(100003);
-        ['🎉', '💜', '⭐', '🎊', '💜'].forEach((c, i) => floatUp(s, to - 12 + i * 6, fy - 20, c, { size: 8, rise: 24, drift: (i - 2) * 4, delay: i * 120, dur: 1500 }));
-        s.time.delayedCall(3200, () => {
-          say.destroy(); spr.play('lucia-run'); spr.setFlipX(false);
-          s.tweens.add({ targets: spr, x: from, alpha: 0, duration: 1000, onComplete: () => {
-            spr.destroy(); if (lucia && lucia.spr.scene) { lucia.spr.setVisible(true); lucia.busy = false; }
-            luciaQueue.shift(); if (luciaQueue.length) setTimeout(go, 600);
-          } });
-        });
-      } });
-    };
-    setTimeout(go, 4200);
-  }
 
   /* ---------- Kit (and Fifi) walk along ---------- */
   const trail = [];
