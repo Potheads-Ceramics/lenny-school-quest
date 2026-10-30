@@ -132,8 +132,11 @@ LQ.Sprites = (function () {
   /* Frames (24x24 each), row of 15:
      0-2 walk down | 3-5 walk up | 6-8 walk side(left)
      9-10 bike down | 11-12 bike up | 13-14 bike side(left) */
-  function lennySheet() {
+  function lennySheet(opts) {
     const N = 15, S = 24;
+    // opts.bike / opts.bikeHi recolour the bike (the golden bike reward, see extras.js)
+    const keep = { bike: C.bike, bikeHi: C.bikeHi };
+    if (opts && opts.bike) { C.bike = opts.bike; C.bikeHi = opts.bikeHi || opts.bike; }
     const sheet = canvas(N * S, S);
     for (let i = 0; i < N; i++) {
       const cell = canvas(S, S);
@@ -147,6 +150,7 @@ LQ.Sprites = (function () {
       outline(cell.ctx, S, S, C.outline);
       sheet.ctx.drawImage(cell.c, i * S, 0);
     }
+    C.bike = keep.bike; C.bikeHi = keep.bikeHi;
     return sheet.c;
   }
 
@@ -304,7 +308,7 @@ LQ.Sprites = (function () {
     let k, r, W, H;
     const make = (w, h) => { W = w; H = h; k = canvas(w, h); r = painter(k.ctx, 0, 0); };
     if (kind === 'family') {
-      // cosy house with a heart on the door (not used in this version)
+      // cosy house with a heart on the door (Abu Ana's house)
       make(48, 46);
       const roof = id === 'green' ? '#4f9a62' : '#c8583f', roofD = id === 'green' ? '#3a7a4b' : '#a2402c', wall = id === 'green' ? '#f3e7cf' : '#f6e3c8';
       r(4, 20, 40, 24, wall); r(4, 41, 40, 3, '#d8c7a4');
@@ -526,6 +530,52 @@ LQ.Sprites = (function () {
     return sheet.c;
   }
 
+  /* Abu Ana (Lenny's grandma): big curly orange hair, red glasses, a purple
+     flowery blouse under a dark cardigan. 4 frames of 16x24:
+     0-1 walking, 2-3 waving (right hand up, two positions). Frames are 20x24
+     (body drawn 2px in, so the waving hand fits). Used by extras.js. */
+  function abuAnaSheet() {
+    const A = { hair: '#d9692b', hairL: '#f2924a', hairD: '#a5461c', skin: '#f2c4a4', skinD: '#d9a283', glass: '#c8202e',
+                eye: '#3a2a20', mouth: '#9a3b34', teeth: '#fbf7ee', blouse: '#a8489a', blouseL: '#e3a2d2', blouseD: '#5e2a66',
+                cardi: '#2a2430', pants: '#3a2f3f', shoe: '#1f1a20' };
+    const sheet = canvas(80, 24);
+    for (let f = 0; f < 4; f++) {
+      const cell = canvas(20, 24), r = painter(cell.ctx, 2, 0);
+      const wave = f >= 2, step = f % 2;
+      // curly hair, wide and full
+      r(3, 0, 10, 2, A.hair); r(2, 1, 12, 3, A.hair); r(1, 3, 14, 4, A.hair);
+      r(1, 7, 3, 6, A.hair); r(12, 7, 3, 6, A.hair); r(2, 13, 2, 2, A.hair); r(12, 13, 2, 2, A.hair);
+      [[4, 1], [8, 0], [11, 2], [2, 4], [13, 5], [1, 9], [14, 10], [3, 12], [12, 12], [6, 2]].forEach(([x, y]) => r(x, y, 1, 1, A.hairL));
+      [[5, 3], [10, 3], [2, 6], [13, 8], [2, 11], [13, 13], [9, 1]].forEach(([x, y]) => r(x, y, 1, 1, A.hairD));
+      // face
+      r(4, 4, 8, 7, A.skin); r(4, 4, 8, 1, A.hair); r(5, 5, 2, 1, A.hair); r(10, 5, 1, 1, A.hair);
+      // red glasses
+      r(4, 6, 3, 1, A.glass); r(4, 8, 3, 1, A.glass); r(4, 7, 1, 1, A.glass); r(6, 7, 1, 1, A.glass);
+      r(9, 6, 3, 1, A.glass); r(9, 8, 3, 1, A.glass); r(9, 7, 1, 1, A.glass); r(11, 7, 1, 1, A.glass);
+      r(7, 7, 2, 1, A.glass); r(5, 7, 1, 1, A.eye); r(10, 7, 1, 1, A.eye);
+      // big smile
+      r(6, 9, 4, 1, A.mouth); r(7, 9, 2, 1, A.teeth); r(5, 8, 1, 1, A.skinD); r(10, 8, 1, 1, A.skinD);
+      r(7, 11, 2, 1, A.skin);
+      // dark cardigan, flowery purple blouse
+      r(3, 12, 10, 7, A.cardi); r(5, 12, 6, 7, A.blouse); r(6, 12, 4, 1, '#f4eef2');
+      [[5, 13], [8, 14], [6, 16], [9, 17], [10, 13]].forEach(([x, y]) => r(x, y, 1, 1, A.blouseL));
+      [[7, 15], [5, 17], [10, 15], [8, 12]].forEach(([x, y]) => r(x, y, 1, 1, A.blouseD));
+      // left arm down (swings a little when walking)
+      r(2, 13 - (step && !wave ? 1 : 0), 1, 4, A.cardi); r(2, 17 - (step && !wave ? 1 : 0), 1, 1, A.skin);
+      // right arm: down when walking, up and waving otherwise
+      if (!wave) { r(13, 13 - (step ? 0 : 1), 1, 4, A.cardi); r(13, 17 - (step ? 0 : 1), 1, 1, A.skin); }
+      else if (f === 2) { r(13, 10, 2, 3, A.cardi); r(15, 8, 1, 3, A.cardi); r(15, 5, 2, 3, A.skin); }
+      else { r(13, 10, 2, 3, A.cardi); r(15, 10, 1, 1, A.cardi); r(16, 8, 2, 2, A.skin); }
+      // trousers and shoes
+      r(4, 19, 8, 2, A.pants);
+      if (!wave && step) { r(4, 21, 3, 1, A.pants); r(10, 21, 2, 1, A.pants); r(4, 22, 3, 1, A.shoe); r(10, 22, 3, 1, A.shoe); }
+      else { r(5, 21, 2, 1, A.pants); r(9, 21, 2, 1, A.pants); r(5, 22, 3, 1, A.shoe); r(8, 22, 3, 1, A.shoe); }
+      outline(cell.ctx, 20, 24, C.outline);
+      sheet.ctx.drawImage(cell.c, f * 20, 0);
+    }
+    return sheet.c;
+  }
+
   /* Speech bubbles above people: "!" = challenge waiting, tick = done. */
   function bubble(kind) {
     const k = canvas(13, 14), r = painter(k.ctx, 1, 1);
@@ -537,5 +587,5 @@ LQ.Sprites = (function () {
     return k.c;
   }
 
-  return { lennySheet, kitSheet, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, bubble, TILE, colors: C };
+  return { lennySheet, kitSheet, kitPortrait, tileset, building, landmark, home, questBoard, podium, interiorTiles, npcSheet, abuAnaSheet, bubble, TILE, colors: C };
 })();

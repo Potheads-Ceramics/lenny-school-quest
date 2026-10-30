@@ -38,6 +38,7 @@ LQ.SchoolGames = (function () {
     const who = npc.name;
     const ctx = { state: LQ.Game.state, school: s, say: (t) => C().say(t, who) };
     const prev = visitOf(s).stations[key];
+    if (st.explain) explainButton(body, st.explain, s);
 
     C().screen(body, [
       h('p', { class: 'meta' }, `${npc.name} · ${npc.role}`),
@@ -67,6 +68,49 @@ LQ.SchoolGames = (function () {
         : `Opdracht ${n} van ${tot} klaar! Doe er nog ${need - n} om de stempel te verdienen.`;
       C().screen(body, [h('div', { class: 'starburst' }, '✓'), C().say(msg), C().row([C().next('Verder ontdekken', () => LQ.UI.closePanel())])]);
     }
+  }
+
+  /* ---------------- "Wat is het verschil?" ----------------
+     Stations where Lenny picks one of the school's real directions or
+     profiles carry st.explain (data/schools.json): per option what you do
+     there and how it differs, from the school's own pages. A small button
+     stays at the top of every screen of that station and opens the
+     explanation on top, so the game underneath keeps its place. */
+  function explainButton(body, ex, s) {
+    const btn = h('button', { class: 'btn explain-btn', type: 'button', onclick: () => explainPop(body, ex, s) }, 'ℹ️ Wat is het verschil?');
+    const keep = () => { if (body.firstChild !== btn) body.insertBefore(btn, body.firstChild); };
+    const obs = new MutationObserver(() => {
+      if (!body.isConnected || document.getElementById('veil').hidden) { obs.disconnect(); btn.remove(); return; }
+      if (!body.querySelector('.explain-pop')) document.getElementById('panel').classList.remove('ex-open');
+      keep();
+    });
+    obs.observe(body, { childList: true });
+    const veilObs = new MutationObserver(() => { if (document.getElementById('veil').hidden) { obs.disconnect(); veilObs.disconnect(); btn.remove(); document.getElementById('panel').classList.remove('ex-open'); } });
+    veilObs.observe(document.getElementById('veil'), { attributes: true, attributeFilter: ['hidden'] });
+    keep();
+  }
+  function explainPop(body, ex, s) {
+    const old = body.querySelector('.explain-pop'); if (old) old.remove();
+    const panel = document.getElementById('panel');
+    const close = () => { pop.remove(); panel.classList.remove('ex-open'); body.scrollTop = 0; };
+    const pop = h('div', { class: 'explain-pop', role: 'dialog', 'aria-label': 'Wat is het verschil?' }, [
+      h('h3', {}, `Wat is het verschil? · ${s.short}`),
+      h('p', {}, ex.intro),
+      h('div', { class: 'ex-items' }, ex.items.map(it => h('div', { class: 'ex-item', style: `--c:${s.roof}` }, [
+        h('h4', {}, `${it.icon} ${it.name}`),
+        h('p', {}, it.what),
+        it.diff ? h('p', { class: 'ex-diff' }, ['👉 ', it.diff]) : null
+      ]))),
+      ex.same ? h('p', { class: 'ex-same' }, ex.same) : null,
+      ex.unknown ? h('p', { class: 'ex-unknown' }, ['❔ ', ex.unknown]) : null,
+      h('p', { class: 'small' }, ['Bron: website van de school (gecheckt ' + ex.checked + '): ',
+        ...ex.sources.flatMap(([t, u], i) => [i ? ' · ' : '', h('a', { href: u, target: '_blank', rel: 'noopener' }, t)])]),
+      C().row([C().next('Terug naar de opdracht', close)])
+    ]);
+    panel.classList.add('ex-open');
+    body.appendChild(pop);
+    body.scrollTop = 0;
+    LQ.Sound.play();
   }
 
   /* ---------------- runner (supports "then" chains) ---------------- */

@@ -37,7 +37,7 @@ window.LQ = window.LQ || {};
       try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
       location.reload();
     },
-    refreshStamps() { LQ.Schools.refreshStamps(); },
+    refreshStamps() { LQ.Schools.refreshStamps(); if (LQ.Extras) LQ.Extras.checkRewards(); },
     // Walk into a school that has an inside (see interior.js).
     enterSchool(s) {
       const sc = this.scene; if (!sc || this.inside) return;
@@ -84,6 +84,7 @@ window.LQ = window.LQ || {};
       if (Game.state.mapV !== 3) { Game.state.pos = null; Game.state.mapV = 3; Game.save(); }
       const start = Game.state.pos && map.walk[Game.state.pos.y * map.W + Game.state.pos.x] ? Game.state.pos : { x: map.home.door.x, y: map.home.door.y + 1 };
       Game.player = LQ.Player.create(this, map, start);
+      LQ.Extras.attach(this);
 
       const cam = this.cameras.main;
       cam.setBounds(0, 0, map.W * TS, map.H * TS);
@@ -135,6 +136,7 @@ window.LQ = window.LQ || {};
 
       this.saveTimer = 0;
       LQ.Minimap.init();
+      LQ.Extras.init(); LQ.Extras.checkRewards();
       if (!Game.state.introDone) setTimeout(() => LQ.UI.intro(), 400);
       LQ.UI.hud();
       document.getElementById('loading').hidden = true;
@@ -151,7 +153,7 @@ window.LQ = window.LQ || {};
       // what is Lenny standing next to?
       const px = Game.player.spr.x, py = Game.player.spr.y;
       let best = null, bd = 22;
-      for (const t of Game.targets) { const d = Math.hypot(t.x - px, t.y - py); if (d < bd) { bd = d; best = t; } }
+      for (const t of Game.targets) { if (t.hidden) continue; const d = Math.hypot(t.x - px, t.y - py); if (d < bd) { bd = d; best = t; } }
       if (best !== this.nearT) { this.nearT = best; LQ.UI.near(best); }
 
       this.saveTimer += delta;
@@ -163,6 +165,7 @@ window.LQ = window.LQ || {};
   async function start(hotData) {
     if (hotData && hotData.state) Game.state = Object.assign(fresh(), hotData.state);
     LQ.UI.init();
+    LQ.Words.init();
     LQ.Joy.init();
     try {
       const res = await fetch('schools.json', { cache: 'no-cache' });

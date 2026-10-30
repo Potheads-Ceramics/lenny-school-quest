@@ -120,6 +120,7 @@ LQ.Interior = (function () {
       // Lenny (always walking inside: the bike waits outside)
       G.interiorPlayer = this.player = LQ.Player.create(this, map, map.spawn);
       this.player.dir = 'up';
+      if (LQ.Extras) LQ.Extras.attach(this);
 
       // camera
       const cam = this.cameras.main;

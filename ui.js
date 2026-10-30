@@ -266,11 +266,18 @@ LQ.UI = (function () {
       rows.push(['🏃', 'Gym per week', `${c.gymLessons} lessen` + (tot ? ` (${tot} min)` : ''), c.gymLessons >= 3 ? 'veel: zoveel als de meeste scholen of meer' : 'minder dan op de meeste scholen (daar zijn het er 3)']);
     } else rows.push(['🏃', 'Gym per week', ASK, '']);
     rows.push(['🏟️', 'Waar je sport', c.sport || ASK, '']);
+    // Trips and camps (30 Oct 2026): the same two lines for every school.
+    rows.push(['⛺', 'Kamp in klas 1', c.camp1 || ASK, '']);
+    rows.push(['✈️', 'Reizen later', c.later || ASK, '']);
     return rows;
   }
   function compareBlock(s) {
+    const c = s.compare || {}, info = G().data.compareInfo || {};
     return h('div', { class: 'compare' }, [h('b', {}, '📏 Zo is het hier (vergeleken met de andere scholen)'),
-      h('ul', { class: 'cmp' }, compareRows(s).map(([ic, k, v, why]) => h('li', {}, [h('span', { class: 'ci', 'aria-hidden': 'true' }, ic), h('span', {}, [h('b', {}, k + ': '), v, why ? h('small', {}, why) : null])])))]);
+      h('ul', { class: 'cmp' }, compareRows(s).map(([ic, k, v, why]) => h('li', {}, [h('span', { class: 'ci', 'aria-hidden': 'true' }, ic), h('span', {}, [h('b', {}, k + ': '), v, why ? h('small', {}, why) : null])]))),
+      info.tripsNote ? h('p', { class: 'small' }, '⛺ ' + info.tripsNote) : null,
+      h('p', { class: 'small' }, ['📖 Tik op een woord met stippellijntjes om te zien wat het betekent.',
+        c.tripSrc ? h('br') : null, c.tripSrc ? 'Bron kamp en reizen: ' : null, c.tripSrc ? h('a', { href: c.tripSrc[1], target: '_blank', rel: 'noopener' }, c.tripSrc[0]) : null])]);
   }
   // All schools side by side, same columns for each.
   function compareAll() {
@@ -280,8 +287,8 @@ LQ.UI = (function () {
     const v = (x) => x == null ? '❓' : x;
     C().screen(body, [C().say('Dezelfde vragen voor elke school. ❓ = nog niet gevonden: vraag het op de open dag!'),
       h('div', { class: 'tablewrap' }, [h('table', { class: 'cmptable' }, [
-        h('thead', {}, h('tr', {}, ['School', '👥 Leerlingen', m === 'walk' ? '🚶 min' : '🚲 min', '⏰ Begint', '⏱️ Les', '🏃 Gym'].map(t => h('th', {}, t)))),
-        h('tbody', {}, sorted.map(s => { const c = s.compare || {}; return h('tr', {}, [h('td', {}, h('b', {}, s.short)), h('td', {}, s.pupils.toLocaleString('nl')), h('td', {}, String(m === 'walk' ? s.walkMin : s.bikeMin)), h('td', {}, v(c.start)), h('td', {}, c.lessonMin ? c.lessonMin + ' min' : '❓'), h('td', {}, c.gymNote ? 'dans/muziek' : c.gymLessons ? c.gymLessons + '×' : '❓')]); }))])]),
+        h('thead', {}, h('tr', {}, ['School', '👥 Leerlingen', m === 'walk' ? '🚶 min' : '🚲 min', '⏰ Begint', '⏱️ Les', '🏃 Gym', '⛺ Kamp klas 1'].map(t => h('th', {}, t)))),
+        h('tbody', {}, sorted.map(s => { const c = s.compare || {}; return h('tr', {}, [h('td', {}, h('b', {}, s.short)), h('td', {}, s.pupils.toLocaleString('nl')), h('td', {}, String(m === 'walk' ? s.walkMin : s.bikeMin)), h('td', {}, v(c.start)), h('td', {}, c.lessonMin ? c.lessonMin + ' min' : '❓'), h('td', {}, c.gymNote ? 'dans/muziek' : c.gymLessons ? c.gymLessons + '×' : '❓'), h('td', {}, v(c.camp1Short))]); }))])]),
       C().row([C().next('Terug', ranking)])]);
   }
 

@@ -49,8 +49,11 @@ LQ.Schools = (function () {
       scene.anims.create({ key: 'kit-idle', frames: [{ key: 'kit', frame: 0 }, { key: 'kit', frame: 0 }, { key: 'kit', frame: 0 }, { key: 'kit', frame: 1 }], frameRate: 2, repeat: -1 });
     }
     const g = map.kit;
-    scene.add.sprite(g.x * TS + 8, g.y * TS + 14, 'kit', 0).setOrigin(0.5, 1).setDepth(g.y * TS + 14).play('kit-idle');
-    targets.push({ kind: 'kit', x: g.x * TS + 8, y: g.y * TS + 12, label: '💬 Praat met Kit', open: () => kit() });
+    const kitSpr = scene.add.sprite(g.x * TS + 8, g.y * TS + 14, 'kit', 0).setOrigin(0.5, 1).setDepth(g.y * TS + 14).play('kit-idle');
+    const kitT = { kind: 'kit', x: g.x * TS + 8, y: g.y * TS + 12, label: '💬 Praat met Kit', open: () => kit() };
+    targets.push(kitT);
+    // Kit can walk along with Lenny (extras.js moves her; she keeps her home spot)
+    LQ.Schools.kitRef = { spr: kitSpr, target: kitT, home: { x: kitSpr.x, y: kitSpr.y } };
 
     // schools
     const byId = Object.fromEntries(data.schools.map(s => [s.id, s]));
@@ -67,7 +70,7 @@ LQ.Schools = (function () {
         open: () => s.interior ? LQ.Game.enterSchool(s) : LQ.UI.schoolVisit(s) });
     }
 
-    // landmarks along the two bike routes (Plaswijck, park, zoo...)
+    // landmarks along the two bike routes (Abu Ana, De Blijberg, football, Plaswijck, park, zoo...)
     const LMD = Object.fromEntries((data.landmarks || []).map(l => [l.id, l]));
     (map.landmarks || []).forEach(lm => {
       const l = LMD[lm.id]; if (!l) return;
@@ -77,12 +80,13 @@ LQ.Schools = (function () {
         if (!scene.textures.exists(key)) scene.textures.addCanvas(key, LQ.Sprites.landmark(lm.kind, lm.id));
         scene.add.image(x, y + 2, key).setOrigin(0.5, 1).setDepth(y);
       }
+      if (LQ.Extras) LQ.Extras.addLandmark(scene, lm, l, x, y);
       const icon = { family: '🏡', shed: '🌻', playground: '🎡', zoo: '🦒', park: '🌳', roundabout: '🔄', streetsign: '🪧', primary: '🎒', football: '⚽' }[lm.kind] || '📍';
       const top = lm.kind === 'roundabout' ? (lm.y0 - 1) * TS : y - ({ family: 48, shed: 36, playground: 50, zoo: 58, park: 28, streetsign: 28, primary: 52, football: 40 }[lm.kind] || 30);
       const t = sign(scene, x, top, icon + ' ' + l.label);
       if (lm.kind === 'family' || lm.kind === 'shed' || lm.kind === 'primary' || lm.kind === 'football') t.setBackgroundColor('#ffe0e6');
       const d = lm.door;
-      targets.push({ kind: 'landmark', x: d.x * TS + 8, y: d.y * TS + 12, label: icon + ' ' + l.label, open: () => LQ.UI.toast(l.say || l.label) });
+      targets.push({ kind: 'landmark', x: d.x * TS + 8, y: d.y * TS + 12, label: icon + ' ' + l.label, open: () => LQ.UI.toast((LQ.Extras && LQ.Extras.poke(l.id)) || l.say || l.label) });
     });
     // a signpost at the start of each family bike route
     (map.routes || []).filter(r => !r.parent && r.icon).forEach(r => {
@@ -124,6 +128,16 @@ LQ.Schools = (function () {
     });
   }
 
+  // "Walk with me" / "Stay here": Kit follows Lenny on the map (an option, off by default).
+  function kitToggle() {
+    const on = !!LQ.Game.state.kitFollow;
+    return LQ.h('button', { class: 'btn', onclick: () => {
+      LQ.Game.state.kitFollow = !on; LQ.Game.save(); LQ.UI.closePanel();
+      LQ.UI.toast(on ? 'Kit gaat terug naar huis. Kom je me opzoeken? 🐾' : 'Kit loopt met je mee! 🐾');
+      if (LQ.Extras) LQ.Extras.kitChanged();
+    } }, on ? '🏠 Ga maar naar huis, Kit' : '🐾 Loop met me mee!');
+  }
+
   // Kit gives a friendly hint about what to do next.
   function kit() {
     const st = LQ.Game.state, C = LQ.Challenges;
@@ -142,11 +156,11 @@ LQ.Schools = (function () {
       const why = !unvisited ? '' : m.length ? `${unvisited.short} heeft ${m.map(t => Sc.LIKE_ICONS[t] + ' ' + Sc.TAG_WORDS[t]).join(' en ')}. Dat vind jij leuk!` : `${unvisited.short} kan goed bij je passen.`;
       msg = `Bezoek nog ${C.VISITS_NEEDED - visits} ${C.VISITS_NEEDED - visits > 1 ? 'scholen' : 'school'}. ${why} Zal ik je de weg wijzen?`;
       const body = LQ.UI.openPanel('Kit');
-      C.screen(body, [C.say(msg), C.row([unvisited ? C.next('Wijs me de weg', () => { LQ.UI.closePanel(); LQ.Game.goTo(unvisited.id); }) : null, LQ.h('button', { class: 'btn', onclick: () => LQ.UI.closePanel() }, 'Bedankt, Kit!')])]);
+      C.screen(body, [C.say(msg), C.row([unvisited ? C.next('Wijs me de weg', () => { LQ.UI.closePanel(); LQ.Game.goTo(unvisited.id); }) : null, kitToggle(), LQ.h('button', { class: 'btn', onclick: () => LQ.UI.closePanel() }, 'Bedankt, Kit!')])]);
       return;
     } else msg = (st.revealed ? 'Je hebt je top 3 gevonden! Bezoek meer scholen of verander je antwoorden wanneer je wilt.' : 'Alles is klaar! Ga naar het gouden podium naast je huis.') + psst;
     const body = LQ.UI.openPanel('Kit');
-    C.screen(body, [C.say(msg), C.row([C.next('Bedankt, Kit!', () => LQ.UI.closePanel())])]);
+    C.screen(body, [C.say(msg), C.row([kitToggle(), C.next('Bedankt, Kit!', () => LQ.UI.closePanel())])]);
   }
 
   return { create, refreshStamps };

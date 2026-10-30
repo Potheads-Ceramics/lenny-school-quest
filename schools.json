@@ -996,7 +996,14 @@
     "start": "8:30",
     "lessonMin": 45,
     "gymLessons": 3,
-    "src": "Data in spel (schoolinfo RML) / schoolwebsite"
+    "src": "Data in spel (schoolinfo RML) / schoolwebsite",
+    "camp1": "Er is een werkweek in het brugjaar. Waar en hoe lang staat niet in de schoolgids.",
+    "camp1Short": "werkweek",
+    "later": "Werkweken in 4 havo, 5 atheneum en 5 gymnasium.",
+    "tripSrc": [
+     "Schoolgids RML 2025-2026",
+     "https://www.rml.nl/wp-content/uploads/2025/10/Schoolgids-RML-2025-2026.pdf"
+    ]
    }
   },
   {
@@ -1738,6 +1745,31 @@
          ]
         }
        ]
+      },
+      "explain": {
+       "intro": "Bij de aanmelding kies je: 2 uur extra sport óf 2 uur extra kunst per week, in de onderbouw. Iedereen heeft daarnaast ook 1 uur muziek en 1 uur tekenen.",
+       "items": [
+        {
+         "icon": "🏃",
+         "name": "Extra sport",
+         "what": "Urban sporten, teamsporten, terugslagspelen en watersporten. Je probeert ook nieuwe dingen, zoals boulderen, golf en schaatsen. Er zijn ook projectdagen.",
+         "diff": "Je bent vooral bezig met bewegen en veel sporten uitproberen."
+        },
+        {
+         "icon": "🎨",
+         "name": "Extra kunst",
+         "what": "Podiumkunst, beeldende kunst, toegepaste kunst en literatuur. In klas 1 leer je veel kunstvormen kennen. In klas 2 ga je dieper in projecten. Elke opdracht eindigt met een expositie of een optreden.",
+         "diff": "Je maakt iets en laat het aan publiek zien."
+        }
+       ],
+       "unknown": "Of je later nog kunt wisselen, staat niet op de site.",
+       "sources": [
+        [
+         "Ons onderwijsaanbod",
+         "https://melanchthon.nl/schiebroek/ons-onderwijsaanbod"
+        ]
+       ],
+       "checked": "30 okt 2026"
       }
      }
     }
@@ -1746,7 +1778,14 @@
     "start": "8:15",
     "lessonMin": 60,
     "sport": "Eigen gymzalen in het hoofdgebouw (vernieuwd in 2024). Je kiest in de onderbouw 2 uur extra sport óf kunst.",
-    "src": "Schoolgids Melanchthon Schiebroek 2026-2027; melanchthon.nl/schiebroek/ons-onderwijsaanbod"
+    "src": "Schoolgids Melanchthon Schiebroek 2026-2027; melanchthon.nl/schiebroek/ons-onderwijsaanbod",
+    "camp1": "De schoolgids noemt een brugklaskamp als voorbeeld van een meerdaagse activiteit. Waar en hoe lang staat er niet.",
+    "camp1Short": "kamp (genoemd)",
+    "later": "Per leerjaar kunnen er meerdaagse reizen zijn. Als voorbeeld noemt de gids een reis naar Berlijn.",
+    "tripSrc": [
+     "Schoolgids Melanchthon Schiebroek 2026-2027",
+     "https://melanchthon.nl/assets/images/downloads/Schoolgids-MEL-Schiebroek-2026-2027.pdf"
+    ]
    }
   },
   {
@@ -2391,7 +2430,14 @@
    "compare": {
     "start": "8:30",
     "lessonMin": 45,
-    "src": "Schoolgids Wolfert Tweetalig 2025-2026"
+    "src": "Schoolgids Wolfert Tweetalig 2025-2026",
+    "camp1": "Brugklaskamp in Nederland.",
+    "camp1Short": "kamp in NL",
+    "later": "Jaar 2: Bath (Engeland), je slaapt bij een gastgezin. Jaar 3: uitwisselingen in Europa. Vwo 4: Florence, Dublin of Málaga. Voorexamenjaar: een internationale stage.",
+    "tripSrc": [
+     "Schoolgids Wolfert Tweetalig 2025-2026",
+     "https://www.wolfert.nl/wp-content/uploads/2025/10/wolfert_tweetalig_schoolgids_2025-2026_250x210mm_v10-1.pdf"
+    ]
    }
   },
   {
@@ -3243,7 +3289,14 @@
     "start": "8:15",
     "lessonMin": 45,
     "sport": "Sportzaal in de school; buitenles op het veld bij hockeyclub HCR.",
-    "src": "Schoolgids Wolfert Dalton 2026-2027; Afspraken LO Wolfert Dalton"
+    "src": "Schoolgids Wolfert Dalton 2026-2027; Afspraken LO Wolfert Dalton",
+    "camp1": "Brugklaskamp. Waar en hoe lang staat niet in de schoolgids.",
+    "camp1Short": "kamp",
+    "later": "In het voorexamenjaar: buitenlandse reizen. Voor jaar 2 tot en met 5 staan geen reizen in de gids.",
+    "tripSrc": [
+     "Schoolgids Wolfert Dalton 2026-2027",
+     "https://www.wolfert.nl/wp-content/uploads/2026/10/Wolfert-Dalton-Schoolgids-2026-2027.pdf"
+    ]
    }
   },
   {
@@ -3737,6 +3790,68 @@
          "tags": []
         }
        ]
+      },
+      "explain": {
+       "intro": "Bij de auditie kies je: de afdeling Dans of de afdeling Muziek. Bij Muziek hoort ook een stijl: klassiek, jazz, pop, wereldmuziek of muziektheater (musical). Bij elke stijl krijg je hoofdvakles op je instrument of in zang, plus solfège, koor, orkest of ensemble en podiumlessen. Muziek is in klas 1 tot 3 ongeveer 9 uur per week.",
+       "items": [
+        {
+         "icon": "🎻",
+         "name": "Klassieke muziek",
+         "what": "Hoofdvak instrument of zang in de klassieke stijl, plus orkest.",
+         "diff": "Typisch voor klassiek: je speelt vooral stukken die al opgeschreven zijn, van bladmuziek."
+        },
+        {
+         "icon": "🎷",
+         "name": "Jazz",
+         "what": "Hoofdvak instrument of zang in de jazzstijl, plus ensemble.",
+         "diff": "Typisch voor jazz: veel improviseren, dus ter plekke zelf muziek verzinnen."
+        },
+        {
+         "icon": "🎸",
+         "name": "Pop",
+         "what": "Hoofdvak instrument of zang in de popstijl, plus ensemble.",
+         "diff": "Typisch voor pop: liedjes, met een band, zang, gitaar en drums."
+        },
+        {
+         "icon": "🌍",
+         "name": "Wereldmuziek",
+         "what": "Hoofdvak instrument of zang in wereldmuziek, plus ensemble.",
+         "diff": "Typisch voor wereldmuziek: muziek en ritmes uit veel verschillende landen en culturen."
+        },
+        {
+         "icon": "🎤",
+         "name": "Musical (muziektheater)",
+         "what": "Een stijl binnen de afdeling Muziek. Zingen staat centraal, plus muziektheorie, solfège en spel en beweging, met stukken uit musicals. Je krijgt les van docenten van de Codarts-opleiding Muziektheater.",
+         "diff": "Hier combineer je zingen met acteren en bewegen."
+        },
+        {
+         "icon": "💃",
+         "name": "Dans",
+         "what": "Een aparte afdeling. Ballet, moderne en hedendaagse dans, urban, improvisatie, creatief en floorwork, plus dansgeschiedenis. Ongeveer 16 uur per week in klas 1 tot 3. Je treedt op, soms in het weekend of in de vakantie.",
+         "diff": "Dans heeft veel meer uren per week dan muziek (16 tegen 9). Na een geslaagde auditie volgt een medisch onderzoek."
+        }
+       ],
+       "same": "Voor jazz, pop, wereldmuziek en muziektheater moet je stijl vastliggen als je naar klas 4 gaat. Muziek en dans kosten cursusgeld (€ 840 in 2024-2025), plus € 210 ouderbijdrage.",
+       "unknown": "Of je in de onderbouw al een muziekstijl kiest of pas later, staat niet duidelijk online. De schoolgids 2025-2026 kon niet geopend worden; de uren komen uit de schoolgids 2023-2024. Vraag het bij de auditie of op de open dag.",
+       "sources": [
+        [
+         "Schoolgids 2023-2024",
+         "https://www.codarts.nl/fileadmin/user_upload/fotos/opleidingen/vooropleidingen/havovwo/schoolgids_hmd_2023-2024_final.pdf"
+        ],
+        [
+         "Toelating muziek",
+         "https://www.codarts.nl/onderwijs/vooropleidingen/havo/vwo/toelating/muziek/"
+        ],
+        [
+         "Musical",
+         "https://www.codarts.nl/onderwijs/vooropleidingen/codarts-lyceum/musical/"
+        ],
+        [
+         "Veelgestelde vragen",
+         "https://www.codarts.nl/onderwijs/vooropleidingen/havo/vwo/faq/"
+        ]
+       ],
+       "checked": "30 okt 2026"
       }
      },
      "4": {
@@ -3830,7 +3945,12 @@
     "lessonMin": 45,
     "gymNote": "Geen gym: in plaats daarvan dans- of muziekles (danslessen duren 90 min).",
     "sport": "Dansstudio’s van Codarts",
-    "src": "Schoolgids Codarts Lyceum 2024-2025"
+    "src": "Schoolgids Codarts Lyceum 2024-2025",
+    "later": "Elk jaar projectweken (verplicht; waar staat er niet). Soms een internationale uitwisseling. Optredens buiten school, soms in het weekend of de vakantie.",
+    "tripSrc": [
+     "Schoolgids Codarts Lyceum 2023-2024",
+     "https://www.codarts.nl/fileadmin/user_upload/fotos/opleidingen/vooropleidingen/havovwo/schoolgids_hmd_2023-2024_final.pdf"
+    ]
    }
   },
   {
@@ -4405,7 +4525,15 @@
    },
    "compare": {
     "lessonMin": 60,
-    "src": "Laurens Lyceum (info in spel)"
+    "src": "Laurens Lyceum (info in spel); Schoolgids Laurens Lyceum 2026-2027",
+    "start": "8:25",
+    "startNote": "eerst een half uur met je vakcoach, de gewone les om 9:00",
+    "gymLessons": 2,
+    "later": "In alle jaren excursies en projecten, van één tot een paar dagen, in Nederland of in het buitenland. Welke, staat niet in de gids.",
+    "tripSrc": [
+     "Schoolgids Laurens Lyceum 2026-2027",
+     "https://laurenslyceum.nl/wp-content/uploads/2026/10/schoolgids2627-30-sept.pdf"
+    ]
    }
   },
   {
@@ -4952,6 +5080,40 @@
          }
         }
        ]
+      },
+      "explain": {
+       "intro": "In klas 1 kies je één keuzevak: Research & Development of Art & Culture (in het spel heet het Kunst & Cultuur). In de lessentabel staat het met 2 uur per week.",
+       "items": [
+        {
+         "icon": "🛠️",
+         "name": "Research & Development (R&D)",
+         "what": "Een bèta- en techniekvak. Je ontwerpt en onderzoekt, bijvoorbeeld: hoe maakt een robot je leven makkelijker? Je doet mee aan een wedstrijd over een duurzame samenleving, je ontwerpt een game en je werkt aan voeding en vitaliteit.",
+         "diff": "Voor als je graag uitzoekt, ontwerpt en uitvindt."
+        },
+        {
+         "icon": "🎨",
+         "name": "Art & Culture (A&C)",
+         "what": "Dans, theater, film, beeldende kunst en muziek. Je maakt je eigen filmscène en je eigen toneelstuk.",
+         "diff": "Voor als je creatief bent en graag zelf iets maakt of opvoert."
+        }
+       ],
+       "same": "In allebei oefen je hetzelfde: informatie zoeken, creatief denken, samenwerken en presenteren.",
+       "unknown": "Wanneer je precies kiest en of je later kunt wisselen, staat niet online.",
+       "sources": [
+        [
+         "Schoolgids 2024-2025",
+         "https://marnixgymnasium.nl/wp-content/uploads/2024/09/MNIX-213-Schoolgids_2024-2025_.pdf"
+        ],
+        [
+         "Research & Development",
+         "https://marnixgymnasium.nl/wat-maakt-het-marnix-bijzonder/research-development/"
+        ],
+        [
+         "Art & Culture",
+         "https://marnixgymnasium.nl/wat-maakt-het-marnix-bijzonder/art-culture/"
+        ]
+       ],
+       "checked": "30 okt 2026"
       }
      },
      "3": {
@@ -5208,7 +5370,14 @@
     "lessonMin": 50,
     "gymLessons": 3,
     "sport": "Eigen sportveld bij de school.",
-    "src": "Schoolgids Marnix Gymnasium 2024-2025"
+    "src": "Schoolgids Marnix Gymnasium 2024-2025",
+    "camp1": "Een uitje naar Blijdorp, en aan het eind van het jaar het eerste klas kamp in Nederland. Dat kamp is niet verplicht.",
+    "camp1Short": "kamp, niet verplicht",
+    "later": "Klas 2: zeilkamp. Klas 3 en 4: uitwisselingen met Duitsland en Frankrijk. Klas 5: Rome of Griekenland.",
+    "tripSrc": [
+     "Schoolgids Marnix Gymnasium 2024-2025",
+     "https://marnixgymnasium.nl/wp-content/uploads/2024/09/MNIX-213-Schoolgids_2024-2025_.pdf"
+    ]
    }
   },
   {
@@ -5827,7 +5996,14 @@
    "compare": {
     "lessonMin": 70,
     "lessonNote": "en elke ochtend één periodeles van 90 min",
-    "src": "Rudolf Steiner College (info in spel)"
+    "src": "Rudolf Steiner College (info in spel)",
+    "camp1": "Klas 7 (de brugklas): werkweek op een boerderij.",
+    "camp1Short": "werkweek boerderij",
+    "later": "Klas 8: survival in de Ardennen. Klas 9: Antwerpen. Klas 10: zeilkamp en een eindreis (Berlijn of Tsjechië). Later nog een kunstreis.",
+    "tripSrc": [
+     "Schoolreizen Rudolf Steiner College",
+     "https://www.rudolfsteinercollege.nl/nl/de+school/onderwijs/onderwijsprogramma/schoolreizen/"
+    ]
    }
   },
   {
@@ -6520,6 +6696,48 @@
          ]
         }
        ]
+      },
+      "explain": {
+       "intro": "Op Het Lyceum kies je al bij de aanmelding een richting, of je kiest de Da Vinci-klas. In klas 1 heeft elke richting 4 uur richtingsvakken per week, plus 2 uur Grafimedia. Iedereen heeft ook filosofie.",
+       "items": [
+        {
+         "icon": "🔬",
+         "name": "Wetenschap",
+         "what": "Vakken: Science en Creative science. Je doet in teams kleine onderzoeken, leert technisch tekenen en bouwt bijvoorbeeld een telescoop. Later komen coderen, Arduino en robotica.",
+         "diff": "Hier ben je vooral aan het onderzoeken: hoe werkt iets, en kun je het zelf bouwen?"
+        },
+        {
+         "icon": "🎨",
+         "name": "Kunst",
+         "what": "Vakken: Art & design 2D en Art & design 3D, in ateliers met kunstenaars als docent. In klas 1 leer je technieken: zagen, solderen, tekenen en schilderen. Later bedenk je steeds meer je eigen ideeën.",
+         "diff": "Hier maak je vooral zelf kunst met je handen. Om binnen te komen heb je een portfolio nodig."
+        },
+        {
+         "icon": "💼",
+         "name": "Ondernemen",
+         "what": "Vakken: Business en Creative business. Je bedenkt producten, leert pitchen en zoekt uit wat klanten willen, vaak in kleine teams.",
+         "diff": "Hier denk je als een bedrijf: wat maak je, voor wie, en hoe verkoop je het?"
+        },
+        {
+         "icon": "🧭",
+         "name": "Da Vinci-klas",
+         "what": "Je kiest nog niet. In klas 1 krijg je een stukje van alle drie de richtingen. Aan het eind van klas 1 kies je er één, samen met je mentor en je ouders.",
+         "diff": "Voor als je het nog niet weet. Je krijgt een jaar om het uit te zoeken."
+        }
+       ],
+       "same": "In alle richtingen werk je met dezelfde stappen: een plan maken, ideeën schetsen, kiezen, een model maken en presenteren. Gymnasium kan bij elke richting. Na klas 3 kun je elk examenprofiel kiezen, welke richting je ook had.",
+       "unknown": "Of je later nog van richting kunt wisselen, staat niet in de schoolgids. Vraag het op de open les.",
+       "sources": [
+        [
+         "Schoolgids 2025-2026",
+         "https://www.hetlyceumrotterdam.nl/media/52og0dzq/2526-hlr_schoolgids-definitief.pdf"
+        ],
+        [
+         "Wat maakt het Lyceum bijzonder?",
+         "https://www.hetlyceumrotterdam.nl/onderwijs/wat-maakt-het-lyceum-bijzonder/"
+        ]
+       ],
+       "checked": "30 okt 2026"
       }
      }
     }
@@ -6527,7 +6745,14 @@
    "compare": {
     "start": "9:00",
     "lessonMin": 50,
-    "src": "hetlyceumrotterdam.nl/algemene-informatie/rooster-en-lestijden"
+    "src": "hetlyceumrotterdam.nl/algemene-informatie/rooster-en-lestijden",
+    "camp1": "Geen kamp genoemd. Wel kennismakingsdagen; dat zijn dagprogramma's.",
+    "camp1Short": "geen kamp genoemd",
+    "later": "Klas 2 en 3: korte reizen naar buitenlandse steden, zoals Parijs. Klas 4: uitwisseling met een school in Italië (voor een groep leerlingen). Voorexamenjaar: een reis naar het buitenland; wie niet meegaat, krijgt een programma in Nederland.",
+    "tripSrc": [
+     "Schoolgids Het Lyceum Rotterdam 2025-2026",
+     "https://www.hetlyceumrotterdam.nl/media/52og0dzq/2526-hlr_schoolgids-definitief.pdf"
+    ]
    }
   },
   {
@@ -7023,6 +7248,44 @@
          ]
         }
        ]
+      },
+      "explain": {
+       "intro": "De talentklassen zijn een extra keuze in de brugklas. Het zijn projecten over verschillende vakken heen, waarin je ontdekt waar je goed in bent. Ze zijn niet verplicht.",
+       "items": [
+        {
+         "icon": "🎨",
+         "name": "Art, Culture, Design & Media",
+         "what": "Kunst, cultuur, ontwerpen en media."
+        },
+        {
+         "icon": "💻",
+         "name": "Information Technology",
+         "what": "Werken met computers en ICT."
+        },
+        {
+         "icon": "🔬",
+         "name": "Science & Philosophy",
+         "what": "Wetenschap en filosofie."
+        },
+        {
+         "icon": "⚽",
+         "name": "Sports & Fun",
+         "what": "Sport en bewegen."
+        }
+       ],
+       "same": "Het verschil zit in het onderwerp. In de schoolgids 2024-2025 staat iets wat erop lijkt, daar heten ze Wereldklassen: 2 keer per jaar kies je, en dan heb je 5 à 6 weken lang elke week een workshop van 2 lesuren, buiten het gewone rooster. Aan het eind is er een middag waarop je laat zien wat je gemaakt hebt.",
+       "unknown": "Wat je per talentklas precies doet en hoeveel uur het is, staat nergens online. Vraag het op de open dag.",
+       "sources": [
+        [
+         "VO Gids: Libanon Lyceum",
+         "https://www.devogids.nl/928/libanon-lyceum/"
+        ],
+        [
+         "Schoolgids 2024-2025",
+         "https://www.libanonlyceum.nl/wp-content/uploads/2024/10/Libanon-Schoolgids-2024-2025.pdf"
+        ]
+       ],
+       "checked": "30 okt 2026"
       }
      },
      "4": {
@@ -7102,7 +7365,19 @@
      }
     }
    },
-   "compare": {}
+   "compare": {
+    "start": "8:30",
+    "lessonMin": 50,
+    "lessonNote": "(soms 40)",
+    "src": "libanonlyceum.nl/schoolinfo/lestijden-en-vakanties",
+    "camp1": "Er is een brugklaskamp. Waar en hoe lang staat niet in de schoolgids.",
+    "camp1Short": "kamp",
+    "later": "Klas 3 en de bovenbouw: werkweken, \"indien mogelijk\". Waarheen staat er niet.",
+    "tripSrc": [
+     "Schoolgids Libanon Lyceum 2024-2025",
+     "https://www.libanonlyceum.nl/wp-content/uploads/2024/10/Libanon-Schoolgids-2024-2025.pdf"
+    ]
+   }
   },
   {
    "id": "lyceum-kralingen",
@@ -7716,7 +7991,14 @@
     "startNote": "maandag 10:00",
     "lessonMin": 60,
     "gymLessons": 2,
-    "src": "Schoolgids Lyceum Kralingen 2025-2026"
+    "src": "Schoolgids Lyceum Kralingen 2025-2026",
+    "camp1": "Geen kamp in klas 1 genoemd. Wel introductiedagen en uitjes in Nederland.",
+    "camp1Short": "geen kamp genoemd",
+    "later": "Klas 2: schoolkamp. Later buitenlandse excursies; waarheen staat niet in de gids.",
+    "tripSrc": [
+     "Schoolgids Lyceum Kralingen 2025-2026",
+     "https://lyceumkralingen.nl/uploads/schoolgids-2025-2026-lyceum-kralingen.pdf"
+    ]
    }
   },
   {
@@ -8297,7 +8579,18 @@
      }
     }
    },
-   "compare": {}
+   "compare": {
+    "start": "8:30",
+    "lessonMin": 45,
+    "src": "Schoolgids Emmauscollege 2026-2027; emmauscollege.nl/leerlingen/lestijden",
+    "camp1": "Een reis van 3 dagen aan het eind van de brugklasperiode: speurtocht, nachtspel, sportmiddag en fietstocht. Je slaapt in bungalows met 7 leerlingen en 1 begeleider.",
+    "camp1Short": "3 dagen, bungalows",
+    "later": "Klas 2: weer 3 dagen weg, in groepsbungalows waar je zelf kookt. Gymnasium klas 2/3: Bath en Trier. Klas 4: iedereen doet mee aan een uitwisseling, met een gastgezin.",
+    "tripSrc": [
+     "Activiteiten onderbouw Emmauscollege",
+     "https://www.emmauscollege.nl/leerlingen/activiteiten/onderbouw/"
+    ]
+   }
   },
   {
    "id": "erasmiaans",
@@ -8908,7 +9201,17 @@
    },
    "compare": {
     "gymLessons": 3,
-    "src": "erasmiaans.nl/de-school/onderbouw (lessentabel)"
+    "src": "erasmiaans.nl/de-school/onderbouw (lessentabel); Schoolgids Erasmiaans Gymnasium 2024-2025; erasmiaans.nl/de-school/onderbouw",
+    "start": "8:30",
+    "lessonMin": 45,
+    "sport": "Sportveld bij Hockeyclub Delfshaven (Energieweg).",
+    "camp1": "Een reis van 3 dagen in klas 1. Waarheen staat niet in de schoolgids.",
+    "camp1Short": "3 dagen",
+    "later": "Klas 3: Trier (Duitsland). Klas 5: Rome of Griekenland.",
+    "tripSrc": [
+     "Schoolkosten Erasmiaans Gymnasium 2026-2027",
+     "https://www.erasmiaans.nl/ouders/schoolkosten/"
+    ]
    }
   },
   {
@@ -9547,11 +9850,67 @@
          ]
         }
        ]
+      },
+      "explain": {
+       "intro": "Hier kies je één kunstrichting. Twee dagdelen per week heb je les in jouw richting, in groepen van ongeveer 16 leerlingen. Soms werk je samen met de andere richtingen.",
+       "items": [
+        {
+         "icon": "🎭",
+         "name": "Theater",
+         "what": "Per week 4 uur toneel, 2 uur zang en 2 uur dans. Je leert personages maken, improviseren en samenspelen. In het Kunstlab zijn workshops, zoals tekstschrijven en choreografie.",
+         "diff": "Theater draait om zelf optreden: spelen, zingen en dansen voor publiek."
+        },
+        {
+         "icon": "🎬",
+         "name": "Film",
+         "what": "6 uur per week. Camera, licht en geluid, scenario's en storyboards, opnemen en monteren. Je eindfilm wordt vertoond op het Examenfestival.",
+         "diff": "Film draait om een verhaal vastleggen met de camera en het daarna bewerken."
+        },
+        {
+         "icon": "✂️",
+         "name": "Vormgeving",
+         "what": "6 uur per week. Tekenen, schilderen, grafisch ontwerpen en collages. Ook 3D: boetseren, bouwen, solderen, naaien en zagen. In de eerste jaren ook schmink, decor en kostuum. Je werkt met Photoshop, Illustrator, Tinkercad en een 3D-printer. Na elk lesblok is er een expositie.",
+         "diff": "Vormgeving draait om zelf ontwerpen en maken."
+        }
+       ],
+       "same": "Presentaties en voorstellingen zijn verplicht en worden beoordeeld.",
+       "unknown": "Of je later van richting kunt wisselen, staat niet online.",
+       "sources": [
+        [
+         "Richtingen",
+         "https://theaterhavovwo.nl/richtingen"
+        ],
+        [
+         "Vormgeving",
+         "https://theaterhavovwo.nl/richtingen/vormgeving"
+        ],
+        [
+         "Brochure (uren per richting)",
+         "https://theaterhavovwo.nl/media/fdjhcgl1/thv_brochure-2324.pdf"
+        ],
+        [
+         "Schoolgids 2025-2026",
+         "https://theaterhavovwo.nl/media/bfvkcqg2/schoolgids-thv-2025-2026.pdf"
+        ]
+       ],
+       "checked": "30 okt 2026"
       }
      }
     }
    },
-   "compare": {}
+   "compare": {
+    "start": "8:55",
+    "lessonMin": 45,
+    "gymLessons": 2,
+    "src": "Schoolgids De Theaterhavo/vwo 2025-2026",
+    "camp1": "Een kennismakingskamp in de Ardennen.",
+    "camp1Short": "kamp Ardennen",
+    "later": "De school wil elk jaar samen op reis. Klas 4: uitwisseling met Finland en Roemenië; wie niet mee kan, gaat op een andere reis.",
+    "tripSrc": [
+     "Schoolgids De Theaterhavo/vwo 2025-2026",
+     "https://theaterhavovwo.nl/media/bfvkcqg2/schoolgids-thv-2025-2026.pdf"
+    ]
+   }
   },
   {
    "id": "thorbecke",
@@ -9921,6 +10280,46 @@
          "tags": []
         }
        ]
+      },
+      "explain": {
+       "intro": "Een highschool is een extra sport- of dansprofiel in klas 1 en 2. Twee schooldagen per week begin je met trainingen. Je doet eerst een sporttest of een dansauditie. Het kost € 200 per jaar; wie dat niet kan betalen, kan een regeling vragen.",
+       "items": [
+        {
+         "icon": "⚽",
+         "name": "Eén sport: voetbal, hockey, basketbal, turnen, boksen of waterpolo",
+         "what": "Les van professionele trainers, samen met sportbonden en sportclubs. Het is een aanvulling op je eigen sportclub.",
+         "diff": "Je wordt beter in één sport die je al leuk vindt."
+        },
+        {
+         "icon": "💃",
+         "name": "Dans",
+         "what": "4 uur per week les van professionele dansdocenten: urban, pop, tap, musical, modern en ballet. Je kunt optreden, op school en daarbuiten. Samen met het Lucia Marthas Institute for Performing Arts.",
+         "diff": "Veel verschillende dansstijlen, en je staat op het podium."
+        },
+        {
+         "icon": "🚵",
+         "name": "Brede sport (Sportklas)",
+         "what": "Je leert veel sporten kennen, ook ongewone: mountainbiken, schermen, golf, roeien, golfsurfen en skiën.",
+         "diff": "Niet één sport, maar juist veel verschillende proberen."
+        },
+        {
+         "icon": "🙂",
+         "name": "Geen highschool",
+         "what": "Een highschool is een extra keuze. Je kunt ook gewoon zonder naar deze school."
+        }
+       ],
+       "unknown": "Hoeveel uur per week de sport-highschools zijn, staat niet online (alleen bij dans: 4 uur).",
+       "sources": [
+        [
+         "Highschools",
+         "https://www.thorbecke-talentschool.nl/thorbecke_highschools"
+        ],
+        [
+         "Schoolgids 2025-2026",
+         "https://www.thorbecke-talentschool.nl/media/view/25841/thorbecke_talentschool_schoolgids_25-26_prinsenlaan.pdf"
+        ]
+       ],
+       "checked": "30 okt 2026"
       }
      },
      "2": {
@@ -10114,7 +10513,11 @@
    },
    "compare": {
     "sport": "Gymzaal en gehuurde sportvelden. Met een sporthighschool train je 2 ochtenden per week.",
-    "src": "Schoolgids Thorbecke Talentschool Prinsenlaan 2025-2026"
+    "src": "Schoolgids Thorbecke Talentschool Prinsenlaan 2025-2026",
+    "tripSrc": [
+     "Schoolgids Thorbecke Prinsenlaan 2025-2026 (zegt dat reizen op de website staan, maar daar staan ze niet)",
+     "https://www.thorbecke-talentschool.nl/media/view/25841/thorbecke_talentschool_schoolgids_25-26_prinsenlaan.pdf"
+    ]
    }
   }
  ],
@@ -10299,6 +10702,14 @@
  },
  "landmarks": [
   {
+   "id": "abu-ana",
+   "label": "Huis van Abu Ana",
+   "kind": "family",
+   "lat": 51.95614,
+   "lon": 4.46998,
+   "say": "Hier woont Abu Ana! Zwaai even als je langs fietst. 👋"
+  },
+  {
    "id": "plaswijck",
    "label": "Plaswijckpark",
    "kind": "playground",
@@ -10337,10 +10748,28 @@
    "lat": 51.937242,
    "lon": 4.461941,
    "say": "De Gordelweg. Fiets lekker rechtdoor tot het Vroesenpark."
+  },
+  {
+   "id": "blijberg",
+   "label": "De Blijberg",
+   "kind": "primary",
+   "lat": 51.935432,
+   "lon": 4.458239,
+   "say": "Jouw school nu: De Blijberg! Op weg naar de dierentuin fiets je hier precies langs."
+  },
+  {
+   "id": "voetbal",
+   "label": "Voetbal (RBFA)",
+   "kind": "football",
+   "lat": 51.936445,
+   "lon": 4.453775,
+   "say": "Hier voetbal je bij RBFA! Vlak bij de hoek waar de route het Vroesenpark in gaat."
   }
  ],
  "compareInfo": {
   "checked": "2026-10-27",
-  "note": "Zelfde vragen voor elke school. Leeg = niet gevonden: vraag het op de open dag."
+  "note": "Zelfde vragen voor elke school. Leeg = niet gevonden: vraag het op de open dag.",
+  "tripsChecked": "2026-10-30",
+  "tripsNote": "Hoeveel nachten een kamp duurt, staat bij geen enkele school online. Vraag het op de open dag."
  }
 }
