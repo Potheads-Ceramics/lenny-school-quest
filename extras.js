@@ -273,6 +273,8 @@ LQ.Extras = (function () {
     return fn(p.scene, p);
   }
 
+  let mamiHello = false; // Mami's hello once per game session
+  const MAMI_HELLO = ['Hoi Len! Veel plezier met ontdekken! 💛', 'Hé schat! Fiets je voorzichtig?', 'Succes, Len! Ik ben benieuwd welke school je leuk vindt.'];
   /* Mami at home: when Lenny comes back after visiting a school, she steps
      out of the front door and asks how it was. Once per visited school. */
   function checkMami(scene, t) {
@@ -281,7 +283,15 @@ LQ.Extras = (function () {
     const e = ex(); e.mamiAsked = e.mamiAsked || [];
     const v = G().state.visits || {};
     const fresh = Object.keys(v).filter(id => v[id] && v[id].done && !e.mamiAsked.includes(id));
-    if (!fresh.length) return;
+    if (!fresh.length) {
+      // no new school to ask about: she still says hi the first time he passes home in a game session
+      if (mamiHello) return;
+      mamiHello = true;
+      stepOut(scene, 'mami', LQ.Sprites.mamiSheet, d.x * TS + 1, d.y * TS + 2, MAMI_HELLO[Math.floor(Math.random() * MAMI_HELLO.length)]);
+      beep([523, 659], 'triangle', 0.05, 0.12);
+      return;
+    }
+    mamiHello = true;
     const s = G().data.schools.find(x => x.id === fresh[fresh.length - 1]);
     e.mamiAsked.push(...fresh); G().save();
     // Mami steps out of the front door, waves and asks, then goes back in
