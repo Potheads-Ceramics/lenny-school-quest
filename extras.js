@@ -248,15 +248,30 @@ LQ.Extras = (function () {
   const MAM_SAYS = 'Hoi Len! Hier, een koekje voor onderweg!';
   // The cookie: a little 🍪 floats above Lenny for a while, then "nom!".
   let snackIcon = null;
+  // While Lenny has the cookie he goes faster ("koekjeskracht", 31 Oct 2026).
+  const COOKIE_BOOST = 1.5;
+  let snackId = 0, puffT = 0;
   function snack(s) {
     const pl = G().player; if (!pl) return;
     if (snackIcon) snackIcon.destroy();
     snackIcon = emo(s, pl.spr.x + 7, pl.spr.y - 22, '🍪', 7).setOrigin(0.5);
+    G().boost = COOKIE_BOOST;
+    const id = ++snackId;
+    s.time.delayedCall(900, () => LQ.UI.toast('🍪 Koekjeskracht! Zolang je het koekje hebt, ga je sneller!'));
     s.time.delayedCall(25000, () => {
-      if (!snackIcon) return;
-      const t = snackIcon; snackIcon = null;
+      if (!snackIcon || id !== snackId) return;
+      const t = snackIcon; snackIcon = null; G().boost = 1;
       floatUp(s, t.x, t.y, 'nom!', { size: 7, rise: 10, dur: 900 }); t.destroy();
     });
+  }
+  // little dust clouds behind Lenny while the cookie makes him fast
+  function cookieDust(scene, d) {
+    const pl = G().player;
+    if (!snackIcon || !pl || !pl.moving || snackIcon.scene !== scene) return;
+    puffT += d; if (puffT < 110) return; puffT = 0;
+    const back = { left: [6, 0], right: [-6, 0], up: [0, 4], down: [0, -10] }[pl.dir] || [0, 0];
+    const c = scene.add.circle(pl.spr.x + back[0] + (Math.random() * 4 - 2), pl.spr.y - 2 + back[1], 2.5, 0xf6ead0, 0.8).setDepth(pl.spr.y - 1);
+    scene.tweens.add({ targets: c, scale: 0.2, alpha: 0, y: c.y - 3, duration: 500, onComplete: () => c.destroy() });
   }
   // These also happen by themselves when Lenny passes by.
   const AUTO = { 'abu-ana': 3, 'dierentuin': 4 };
@@ -801,6 +816,7 @@ LQ.Extras = (function () {
       tickKit(scene, d);
       const pl = G().player; // the cookie floats along with Lenny
       if (snackIcon && pl && snackIcon.scene === scene) snackIcon.setPosition(pl.spr.x + 7, pl.spr.y - 22 + Math.sin(t / 250));
+      cookieDust(scene, d);
       acc += d; if (acc > 300 && scene.scene.key === 'world') { acc = 0; checkAuto(scene); }
     });
     scene.events.once('shutdown', () => { scene._lqExtras = false; if (idleCube && idleCube.scene === scene) idleCube = null; });

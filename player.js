@@ -45,7 +45,7 @@ LQ.Player = (function () {
     p.stop = () => { p.path = null; p.onArrive = null; };
 
     p.update = (dt, keys, mode) => {
-      let sp = SPEED[mode] * dt;
+      let sp = SPEED[mode] * dt * ((LQ.Game && LQ.Game.boost) || 1); // boost: Mam's cookie makes him faster
       let dx = 0, dy = 0;
       if (keys) { dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0); dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); }
       // joystick: a small push walks slowly, a full push goes full speed
