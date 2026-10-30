@@ -654,9 +654,9 @@ LQ.Extras = (function () {
     if (!scene.anims.exists('lucia-idle')) scene.anims.create({ key: 'lucia-idle', frames: [0, 0, 0, 3].map(n => ({ key: 'lucia', frame: n })), frameRate: 2, repeat: -1 });
   }
   /* Lucia lives at home now (30 Oct 2026): she sings and dances next to her
-     karaoke machine, beside the house. Tapping her (or the machine) makes
-     Lenny sing and dance with her, and the music switches to her disco song.
-     No panel, no game. */
+     karaoke machine, beside the house. Tapping her opens a short chat with a
+     high five. Tapping the machine makes Lenny sing and dance with her, and
+     the music switches to her disco song (no panel, no game). */
   let karaokeSpr = null, danceT = null;
   function addHome(scene, map) {
     luciaAnims(scene);
@@ -676,9 +676,23 @@ LQ.Extras = (function () {
     } });
     scene.events.once('shutdown', () => { lucia = null; karaokeSpr = null; sway.remove(); stopDance(true); });
     return [
-      { kind: 'lucia', x: lx, y: ly - 2, label: '🎤 Zing en dans met Lucia', open: () => startDance() },
+      { kind: 'lucia', x: lx, y: ly - 2, label: '💜 Lucia', open: () => luciaChat() },
       { kind: 'karaoke', x: kx, y: ky - 2, label: '🎤 Zing en dans met Lucia', open: () => startDance() }
     ];
+  }
+  const LUCIA_HI = ['Hoi Len! Ik oefen een nieuw liedje. Welke school vond jij het leukst?', 'Len! Als jij naar de middelbare gaat, mag ik dan je oude fietsbel? 😄', 'Hoi grote broer! Wist je dat een giraf maar 7 nekwervels heeft? Net als wij!'];
+  function luciaChat() {
+    const C = LQ.Challenges, h = LQ.h, n = visits();
+    const body = LQ.UI.openPanel('Lucia');
+    const line = n >= 1 && Math.random() < 0.5 ? `Je hebt al ${n} ${n === 1 ? 'school' : 'scholen'} bekeken! Goed bezig, grote broer! 💜` : LUCIA_HI[Math.floor(Math.random() * LUCIA_HI.length)];
+    C.screen(body, [luciaFace(C.say(line, 'Lucia')), C.row([C.next('🙌 High five!', () => { LQ.UI.closePanel(); luciaHop(); }), h('button', { class: 'btn', onclick: () => LQ.UI.closePanel() }, 'Doei Lucia! 👋')])]);
+  }
+  function luciaHop() {
+    if (!lucia || !lucia.spr.scene) return;
+    const s = lucia.scene, spr = lucia.spr, y = lucia.home.y;
+    beep([659, 784, 1046], 'triangle', 0.05, 0.1);
+    s.tweens.add({ targets: spr, y: y - 6, yoyo: true, repeat: 2, duration: 180, onComplete: () => spr.setY(y) });
+    ['✋', '💜'].forEach((c, i) => floatUp(s, spr.x + 4 + i * 6, y - 20, c, { size: 8, rise: 18, delay: i * 200 }));
   }
   function luciaFace(el) {
     try { const f = document.createElement('canvas'); f.width = 20; f.height = 14; f.getContext('2d').drawImage(LQ.Sprites.luciaSheet(), 0, 0, 20, 14, 0, 0, 20, 14); f.className = 'mami-face'; const w = el.querySelector('.who'); if (w) w.prepend(f); el.classList.add('fam-say'); } catch (e) {}
