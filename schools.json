@@ -7769,7 +7769,7 @@
        "qs": [
         {
          "q": "Waar komt de robot uit?",
-         "big": "REPEAT 4 { FORWARD, RIGHT }",
+         "big": "HERHAAL 4 { VOORUIT, RECHTS }",
          "opts": [
           "Terug waar hij begon",
           "4 stappen naar voren",
@@ -7780,7 +7780,7 @@
         },
         {
          "q": "Welke vorm tekent dit?",
-         "big": "REPEAT 3 { FORWARD, FORWARD, RIGHT }",
+         "big": "HERHAAL 3 { VOORUIT, VOORUIT, RECHTS }",
          "opts": [
           "3 kanten van een vierkant",
           "Een driehoek",
@@ -7801,7 +7801,7 @@
         },
         {
          "q": "Dit moet tellen: 1, 2, 3, 4, 5. Wat is de bug?",
-         "big": "x = 1 · REPEAT 5 { SHOW x, x = x + 2 }",
+         "big": "x = 1 · HERHAAL 5 { TOON x, x = x + 2 }",
          "opts": [
           "x gaat 2 omhoog, niet 1",
           "Er moet HERHAAL 4 staan",
