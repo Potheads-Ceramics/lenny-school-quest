@@ -7800,15 +7800,15 @@
          "explain": "De robot moet precies één keer helemaal rond draaien: 360 ÷ 3 = 120 graden."
         },
         {
-         "q": "Dit moet tellen: 1, 2, 3, 4, 5. Wat is de bug?",
-         "big": "x = 1 · HERHAAL 5 { TOON x, x = x + 2 }",
+         "q": "De robot moet 4 stappen naar voren lopen. Maar hij stopt te vroeg! Wat is de bug?",
+         "big": "HERHAAL 3 { VOORUIT }",
          "opts": [
-          "x gaat 2 omhoog, niet 1",
           "Er moet HERHAAL 4 staan",
-          "TOON moet na x = x + 2 komen"
+          "Er moet RECHTS bij",
+          "Er moet HERHAAL 2 staan"
          ],
          "a": 0,
-         "explain": "Hij toont 1, 3, 5, 7, 9. Verander +2 in +1 en de bug is weg!"
+         "explain": "HERHAAL 3 betekent: 3 keer een stap. Maak er HERHAAL 4 van, dan loopt hij 4 stappen. Bug weg!"
         }
        ]
       }
